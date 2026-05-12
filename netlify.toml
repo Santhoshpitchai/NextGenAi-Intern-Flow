@@ -6,7 +6,7 @@
   from = "/*"
   to = "/"
   status = 200
-find dist/client -name "*.html" -o -name "*.js" | head -10  force = false
+  force = false
 
 [build.environment]
   NODE_VERSION = "22"
