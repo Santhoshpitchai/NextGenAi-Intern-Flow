@@ -4,5 +4,9 @@
 
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/"
   status = 200
+  force = false
+
+[build.environment]
+  NODE_VERSION = "22"
