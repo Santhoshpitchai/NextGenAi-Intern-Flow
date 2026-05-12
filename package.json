@@ -10,8 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "deploy": "npm run build && wrangler pages deploy .output/public",
-    "deploy:preview": "npm run build && wrangler pages deploy .output/public --branch=preview"
+    "deploy": "npm run build && npx wrangler pages deploy dist/client --project-name=internflow-ai",
+    "deploy:preview": "npm run build && npx wrangler pages deploy dist/client --project-name=internflow-ai --branch=preview"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
