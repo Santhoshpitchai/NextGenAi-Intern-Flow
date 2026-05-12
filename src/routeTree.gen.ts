@@ -11,9 +11,17 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as InternRouteImport } from './routes/intern'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as InternIndexRouteImport } from './routes/intern.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as InternUpdatesRouteImport } from './routes/intern.updates'
+import { Route as InternTasksRouteImport } from './routes/intern.tasks'
+import { Route as InternRequestsRouteImport } from './routes/intern.requests'
+import { Route as InternPerformanceRouteImport } from './routes/intern.performance'
+import { Route as InternChatRouteImport } from './routes/intern.chat'
+import { Route as InternCalendarRouteImport } from './routes/intern.calendar'
 import { Route as AdminTasksRouteImport } from './routes/admin.tasks'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
@@ -34,6 +42,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InternRoute = InternRouteImport.update({
+  id: '/intern',
+  path: '/intern',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -44,10 +57,45 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InternIndexRoute = InternIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => InternRoute,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRoute,
+} as any)
+const InternUpdatesRoute = InternUpdatesRouteImport.update({
+  id: '/updates',
+  path: '/updates',
+  getParentRoute: () => InternRoute,
+} as any)
+const InternTasksRoute = InternTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => InternRoute,
+} as any)
+const InternRequestsRoute = InternRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => InternRoute,
+} as any)
+const InternPerformanceRoute = InternPerformanceRouteImport.update({
+  id: '/performance',
+  path: '/performance',
+  getParentRoute: () => InternRoute,
+} as any)
+const InternChatRoute = InternChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => InternRoute,
+} as any)
+const InternCalendarRoute = InternCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => InternRoute,
 } as any)
 const AdminTasksRoute = AdminTasksRouteImport.update({
   id: '/tasks',
@@ -98,6 +146,7 @@ const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/intern': typeof InternRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -109,7 +158,14 @@ export interface FileRoutesByFullPath {
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/tasks': typeof AdminTasksRoute
+  '/intern/calendar': typeof InternCalendarRoute
+  '/intern/chat': typeof InternChatRoute
+  '/intern/performance': typeof InternPerformanceRoute
+  '/intern/requests': typeof InternRequestsRoute
+  '/intern/tasks': typeof InternTasksRoute
+  '/intern/updates': typeof InternUpdatesRoute
   '/admin/': typeof AdminIndexRoute
+  '/intern/': typeof InternIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -124,12 +180,20 @@ export interface FileRoutesByTo {
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/tasks': typeof AdminTasksRoute
+  '/intern/calendar': typeof InternCalendarRoute
+  '/intern/chat': typeof InternChatRoute
+  '/intern/performance': typeof InternPerformanceRoute
+  '/intern/requests': typeof InternRequestsRoute
+  '/intern/tasks': typeof InternTasksRoute
+  '/intern/updates': typeof InternUpdatesRoute
   '/admin': typeof AdminIndexRoute
+  '/intern': typeof InternIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/intern': typeof InternRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -141,13 +205,21 @@ export interface FileRoutesById {
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/tasks': typeof AdminTasksRoute
+  '/intern/calendar': typeof InternCalendarRoute
+  '/intern/chat': typeof InternChatRoute
+  '/intern/performance': typeof InternPerformanceRoute
+  '/intern/requests': typeof InternRequestsRoute
+  '/intern/tasks': typeof InternTasksRoute
+  '/intern/updates': typeof InternUpdatesRoute
   '/admin/': typeof AdminIndexRoute
+  '/intern/': typeof InternIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/intern'
     | '/login'
     | '/signup'
     | '/admin/analytics'
@@ -159,7 +231,14 @@ export interface FileRouteTypes {
     | '/admin/requests'
     | '/admin/settings'
     | '/admin/tasks'
+    | '/intern/calendar'
+    | '/intern/chat'
+    | '/intern/performance'
+    | '/intern/requests'
+    | '/intern/tasks'
+    | '/intern/updates'
     | '/admin/'
+    | '/intern/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -174,11 +253,19 @@ export interface FileRouteTypes {
     | '/admin/requests'
     | '/admin/settings'
     | '/admin/tasks'
+    | '/intern/calendar'
+    | '/intern/chat'
+    | '/intern/performance'
+    | '/intern/requests'
+    | '/intern/tasks'
+    | '/intern/updates'
     | '/admin'
+    | '/intern'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/intern'
     | '/login'
     | '/signup'
     | '/admin/analytics'
@@ -190,12 +277,20 @@ export interface FileRouteTypes {
     | '/admin/requests'
     | '/admin/settings'
     | '/admin/tasks'
+    | '/intern/calendar'
+    | '/intern/chat'
+    | '/intern/performance'
+    | '/intern/requests'
+    | '/intern/tasks'
+    | '/intern/updates'
     | '/admin/'
+    | '/intern/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  InternRoute: typeof InternRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
 }
@@ -216,6 +311,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/intern': {
+      id: '/intern'
+      path: '/intern'
+      fullPath: '/intern'
+      preLoaderRoute: typeof InternRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -230,12 +332,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/intern/': {
+      id: '/intern/'
+      path: '/'
+      fullPath: '/intern/'
+      preLoaderRoute: typeof InternIndexRouteImport
+      parentRoute: typeof InternRoute
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/intern/updates': {
+      id: '/intern/updates'
+      path: '/updates'
+      fullPath: '/intern/updates'
+      preLoaderRoute: typeof InternUpdatesRouteImport
+      parentRoute: typeof InternRoute
+    }
+    '/intern/tasks': {
+      id: '/intern/tasks'
+      path: '/tasks'
+      fullPath: '/intern/tasks'
+      preLoaderRoute: typeof InternTasksRouteImport
+      parentRoute: typeof InternRoute
+    }
+    '/intern/requests': {
+      id: '/intern/requests'
+      path: '/requests'
+      fullPath: '/intern/requests'
+      preLoaderRoute: typeof InternRequestsRouteImport
+      parentRoute: typeof InternRoute
+    }
+    '/intern/performance': {
+      id: '/intern/performance'
+      path: '/performance'
+      fullPath: '/intern/performance'
+      preLoaderRoute: typeof InternPerformanceRouteImport
+      parentRoute: typeof InternRoute
+    }
+    '/intern/chat': {
+      id: '/intern/chat'
+      path: '/chat'
+      fullPath: '/intern/chat'
+      preLoaderRoute: typeof InternChatRouteImport
+      parentRoute: typeof InternRoute
+    }
+    '/intern/calendar': {
+      id: '/intern/calendar'
+      path: '/calendar'
+      fullPath: '/intern/calendar'
+      preLoaderRoute: typeof InternCalendarRouteImport
+      parentRoute: typeof InternRoute
     }
     '/admin/tasks': {
       id: '/admin/tasks'
@@ -331,9 +482,33 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface InternRouteChildren {
+  InternCalendarRoute: typeof InternCalendarRoute
+  InternChatRoute: typeof InternChatRoute
+  InternPerformanceRoute: typeof InternPerformanceRoute
+  InternRequestsRoute: typeof InternRequestsRoute
+  InternTasksRoute: typeof InternTasksRoute
+  InternUpdatesRoute: typeof InternUpdatesRoute
+  InternIndexRoute: typeof InternIndexRoute
+}
+
+const InternRouteChildren: InternRouteChildren = {
+  InternCalendarRoute: InternCalendarRoute,
+  InternChatRoute: InternChatRoute,
+  InternPerformanceRoute: InternPerformanceRoute,
+  InternRequestsRoute: InternRequestsRoute,
+  InternTasksRoute: InternTasksRoute,
+  InternUpdatesRoute: InternUpdatesRoute,
+  InternIndexRoute: InternIndexRoute,
+}
+
+const InternRouteWithChildren =
+  InternRoute._addFileChildren(InternRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  InternRoute: InternRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
 }
