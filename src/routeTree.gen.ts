@@ -15,7 +15,11 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminTasksRouteImport } from './routes/admin.tasks'
+import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
+import { Route as AdminProjectsRouteImport } from './routes/admin.projects'
 import { Route as AdminInternsRouteImport } from './routes/admin.interns'
+import { Route as AdminCalendarRouteImport } from './routes/admin.calendar'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -47,9 +51,29 @@ const AdminTasksRoute = AdminTasksRouteImport.update({
   path: '/tasks',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminRequestsRoute = AdminRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProjectsRoute = AdminProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminInternsRoute = AdminInternsRouteImport.update({
   id: '/interns',
   path: '/interns',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCalendarRoute = AdminCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => AdminRoute,
 } as any)
 
@@ -58,7 +82,11 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/calendar': typeof AdminCalendarRoute
   '/admin/interns': typeof AdminInternsRoute
+  '/admin/projects': typeof AdminProjectsRoute
+  '/admin/requests': typeof AdminRequestsRoute
   '/admin/tasks': typeof AdminTasksRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -66,7 +94,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/calendar': typeof AdminCalendarRoute
   '/admin/interns': typeof AdminInternsRoute
+  '/admin/projects': typeof AdminProjectsRoute
+  '/admin/requests': typeof AdminRequestsRoute
   '/admin/tasks': typeof AdminTasksRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -76,7 +108,11 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/calendar': typeof AdminCalendarRoute
   '/admin/interns': typeof AdminInternsRoute
+  '/admin/projects': typeof AdminProjectsRoute
+  '/admin/requests': typeof AdminRequestsRoute
   '/admin/tasks': typeof AdminTasksRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -87,18 +123,36 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/signup'
+    | '/admin/analytics'
+    | '/admin/calendar'
     | '/admin/interns'
+    | '/admin/projects'
+    | '/admin/requests'
     | '/admin/tasks'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/signup' | '/admin/interns' | '/admin/tasks' | '/admin'
+  to:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/admin/analytics'
+    | '/admin/calendar'
+    | '/admin/interns'
+    | '/admin/projects'
+    | '/admin/requests'
+    | '/admin/tasks'
+    | '/admin'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/login'
     | '/signup'
+    | '/admin/analytics'
+    | '/admin/calendar'
     | '/admin/interns'
+    | '/admin/projects'
+    | '/admin/requests'
     | '/admin/tasks'
     | '/admin/'
   fileRoutesById: FileRoutesById
@@ -154,6 +208,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTasksRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/requests': {
+      id: '/admin/requests'
+      path: '/requests'
+      fullPath: '/admin/requests'
+      preLoaderRoute: typeof AdminRequestsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/projects': {
+      id: '/admin/projects'
+      path: '/projects'
+      fullPath: '/admin/projects'
+      preLoaderRoute: typeof AdminProjectsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/interns': {
       id: '/admin/interns'
       path: '/interns'
@@ -161,17 +229,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInternsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/calendar': {
+      id: '/admin/calendar'
+      path: '/calendar'
+      fullPath: '/admin/calendar'
+      preLoaderRoute: typeof AdminCalendarRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminCalendarRoute: typeof AdminCalendarRoute
   AdminInternsRoute: typeof AdminInternsRoute
+  AdminProjectsRoute: typeof AdminProjectsRoute
+  AdminRequestsRoute: typeof AdminRequestsRoute
   AdminTasksRoute: typeof AdminTasksRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminCalendarRoute: AdminCalendarRoute,
   AdminInternsRoute: AdminInternsRoute,
+  AdminProjectsRoute: AdminProjectsRoute,
+  AdminRequestsRoute: AdminRequestsRoute,
   AdminTasksRoute: AdminTasksRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
