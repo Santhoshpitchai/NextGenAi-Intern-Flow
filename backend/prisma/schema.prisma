@@ -1,0 +1,430 @@
+// InternFlow AI — Production PostgreSQL schema
+// Bounded contexts: Identity | Organization | Internship | Work | Engagement | Media
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  INTERN
+  COMPANY_ADMIN
+  SUPER_ADMIN
+}
+
+enum AssignmentStatus {
+  DRAFT
+  PENDING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  BLOCKED
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum NotificationType {
+  SYSTEM
+  TASK_ASSIGNED
+  TASK_DUE
+  PROGRESS_UPDATE
+  ASSIGNMENT_UPDATE
+  MENTION
+  REMINDER
+}
+
+enum FileKind {
+  RESUME
+  PROFILE_PHOTO
+  COMPANY_LOGO
+  TASK_ATTACHMENT
+  OTHER
+}
+
+enum SessionStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Identity & authentication (microservice-ready: auth-service)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  email           String    @unique @db.VarChar(320)
+  passwordHash    String    @map("password_hash") @db.VarChar(255)
+  phone           String?   @db.VarChar(32)
+  role            UserRole
+  emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(6)
+  lastLoginAt     DateTime? @map("last_login_at") @db.Timestamptz(6)
+  isActive        Boolean   @default(true) @map("is_active")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdById String? @map("created_by_id") @db.Uuid
+  updatedById String? @map("updated_by_id") @db.Uuid
+
+  createdBy User?  @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?  @relation("UserUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdUsers User[] @relation("UserCreatedBy")
+  updatedUsers User[] @relation("UserUpdatedBy")
+
+  intern            Intern?
+  companyAdmin      CompanyAdmin?
+  refreshTokens     RefreshToken[]
+  sessions          Session[]
+  ownedFiles        File[]              @relation("FileOwner")
+  notifications     Notification[]
+  tasksAssigned     Task[]              @relation("TaskAssignee")
+  tasksCreated      Task[]              @relation("TaskCreator")
+  progressEntries   ProgressEntry[]     @relation("ProgressAuthor")
+  assignmentsManaged InternshipAssignment[] @relation("AssignmentManager")
+
+  @@index([email])
+  @@index([role])
+  @@index([deletedAt])
+  @@index([isActive, role])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash") @db.VarChar(128)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions Session[]
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+  @@map("refresh_tokens")
+}
+
+model Session {
+  id             String        @id @default(uuid()) @db.Uuid
+  userId         String        @map("user_id") @db.Uuid
+  refreshTokenId String?       @map("refresh_token_id") @db.Uuid
+  status         SessionStatus @default(ACTIVE)
+  ipAddress      String?       @map("ip_address") @db.VarChar(45)
+  userAgent      String?       @map("user_agent") @db.VarChar(512)
+  deviceLabel    String?       @map("device_label") @db.VarChar(120)
+  lastActiveAt   DateTime      @default(now()) @map("last_active_at") @db.Timestamptz(6)
+  expiresAt      DateTime      @map("expires_at") @db.Timestamptz(6)
+  revokedAt      DateTime?     @map("revoked_at") @db.Timestamptz(6)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime?     @map("deleted_at") @db.Timestamptz(6)
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshToken RefreshToken? @relation(fields: [refreshTokenId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([expiresAt])
+  @@index([refreshTokenId])
+  @@map("sessions")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Organization (company-service)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Company {
+  id          String  @id @default(uuid()) @db.Uuid
+  name        String  @db.VarChar(200)
+  slug        String  @unique @db.VarChar(220)
+  description String? @db.Text
+  website     String? @db.VarChar(500)
+  industry    String? @db.VarChar(120)
+  sizeBand    String? @map("size_band") @db.VarChar(50)
+  logoFileId  String? @unique @map("logo_file_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdById String? @map("created_by_id") @db.Uuid
+  updatedById String? @map("updated_by_id") @db.Uuid
+
+  logoFile    File?                  @relation("CompanyLogo", fields: [logoFileId], references: [id], onDelete: SetNull)
+  admins      CompanyAdmin[]
+  assignments InternshipAssignment[]
+
+  @@index([name])
+  @@index([deletedAt])
+  @@map("companies")
+}
+
+model CompanyAdmin {
+  id         String  @id @default(uuid()) @db.Uuid
+  userId     String  @unique @map("user_id") @db.Uuid
+  companyId  String  @map("company_id") @db.Uuid
+  fullName   String  @map("full_name") @db.VarChar(160)
+  department String  @db.VarChar(120)
+  jobTitle   String? @map("job_title") @db.VarChar(120)
+  isPrimary  Boolean @default(false) @map("is_primary")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdById String? @map("created_by_id") @db.Uuid
+  updatedById String? @map("updated_by_id") @db.Uuid
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, userId])
+  @@index([companyId, deletedAt])
+  @@index([department])
+  @@map("company_admins")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Intern profiles & skills (intern-service)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Intern {
+  id              String  @id @default(uuid()) @db.Uuid
+  userId          String  @unique @map("user_id") @db.Uuid
+  fullName        String  @map("full_name") @db.VarChar(160)
+  college         String  @db.VarChar(200)
+  degree          String  @db.VarChar(120)
+  specialization  String  @db.VarChar(160)
+  githubUrl       String? @map("github_url") @db.VarChar(500)
+  linkedinUrl     String? @map("linkedin_url") @db.VarChar(500)
+  resumeFileId    String? @unique @map("resume_file_id") @db.Uuid
+  profilePhotoId  String? @unique @map("profile_photo_id") @db.Uuid
+  durationStart   DateTime @map("duration_start") @db.Date
+  durationEnd     DateTime @map("duration_end") @db.Date
+  bio             String? @db.Text
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdById String? @map("created_by_id") @db.Uuid
+  updatedById String? @map("updated_by_id") @db.Uuid
+
+  user         User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resumeFile   File?                  @relation("InternResume", fields: [resumeFileId], references: [id], onDelete: SetNull)
+  profilePhoto File?                  @relation("InternProfilePhoto", fields: [profilePhotoId], references: [id], onDelete: SetNull)
+  skills       InternSkill[]
+  assignments  InternshipAssignment[]
+  progressLogs ProgressEntry[]
+
+  @@index([college])
+  @@index([degree])
+  @@index([durationStart, durationEnd])
+  @@index([deletedAt])
+  @@map("interns")
+}
+
+model Skill {
+  id       String  @id @default(uuid()) @db.Uuid
+  name     String  @unique @db.VarChar(100)
+  slug     String  @unique @db.VarChar(120)
+  category String? @db.VarChar(80)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  interns InternSkill[]
+
+  @@index([category])
+  @@index([deletedAt])
+  @@map("skills")
+}
+
+model InternSkill {
+  id             String @id @default(uuid()) @db.Uuid
+  internId       String @map("intern_id") @db.Uuid
+  skillId        String @map("skill_id") @db.Uuid
+  proficiency    Int?   @db.SmallInt // 1–5 optional
+  yearsExperience Decimal? @map("years_experience") @db.Decimal(3, 1)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  intern Intern @relation(fields: [internId], references: [id], onDelete: Cascade)
+  skill  Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([internId, skillId])
+  @@index([skillId])
+  @@map("intern_skills")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Internship assignments (assignment-service)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model InternshipAssignment {
+  id          String           @id @default(uuid()) @db.Uuid
+  internId    String           @map("intern_id") @db.Uuid
+  companyId   String           @map("company_id") @db.Uuid
+  title       String           @db.VarChar(160)
+  department  String?          @db.VarChar(120)
+  status      AssignmentStatus @default(PENDING)
+  startDate   DateTime         @map("start_date") @db.Date
+  endDate     DateTime         @map("end_date") @db.Date
+  managerId   String?          @map("manager_id") @db.Uuid
+  notes       String?          @db.Text
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdById String? @map("created_by_id") @db.Uuid
+  updatedById String? @map("updated_by_id") @db.Uuid
+
+  intern  Intern  @relation(fields: [internId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  manager User?   @relation("AssignmentManager", fields: [managerId], references: [id], onDelete: SetNull)
+  tasks   Task[]
+
+  @@index([companyId, status])
+  @@index([internId, status])
+  @@index([startDate, endDate])
+  @@index([deletedAt])
+  @@map("internship_assignments")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tasks & progress (work-service)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Task {
+  id           String       @id @default(uuid()) @db.Uuid
+  assignmentId String       @map("assignment_id") @db.Uuid
+  assigneeId   String       @map("assignee_id") @db.Uuid
+  createdById  String       @map("created_by_id") @db.Uuid
+  title        String       @db.VarChar(240)
+  description  String?      @db.Text
+  status       TaskStatus   @default(TODO)
+  priority     TaskPriority @default(MEDIUM)
+  dueDate      DateTime?    @map("due_date") @db.Timestamptz(6)
+  completedAt  DateTime?    @map("completed_at") @db.Timestamptz(6)
+  sortOrder    Int          @default(0) @map("sort_order")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  assignment     InternshipAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  assignee       User                 @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: Restrict)
+  createdBy      User                 @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  progressEntries ProgressEntry[]
+
+  @@index([assignmentId, status])
+  @@index([assigneeId, status])
+  @@index([dueDate])
+  @@index([deletedAt])
+  @@map("tasks")
+}
+
+model ProgressEntry {
+  id              String   @id @default(uuid()) @db.Uuid
+  taskId          String?  @map("task_id") @db.Uuid
+  internId        String   @map("intern_id") @db.Uuid
+  authorId        String   @map("author_id") @db.Uuid
+  percentComplete Int      @map("percent_complete") @db.SmallInt
+  summary         String   @db.VarChar(500)
+  details         String?  @db.Text
+  blockers        String?  @db.Text
+  recordedAt      DateTime @default(now()) @map("recorded_at") @db.Timestamptz(6)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  task   Task?  @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  intern Intern @relation(fields: [internId], references: [id], onDelete: Cascade)
+  author User   @relation("ProgressAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([internId, recordedAt])
+  @@index([taskId])
+  @@index([deletedAt])
+  @@map("progress_entries")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Notifications (notification-service)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  type      NotificationType
+  title     String           @db.VarChar(240)
+  body      String           @db.Text
+  actionUrl String?          @map("action_url") @db.VarChar(500)
+  metadata  Json?            @db.JsonB
+  readAt    DateTime?        @map("read_at") @db.Timestamptz(6)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+  @@index([type])
+  @@index([deletedAt])
+  @@map("notifications")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Media / file storage metadata (media-service)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model File {
+  id           String   @id @default(uuid()) @db.Uuid
+  ownerId      String   @map("owner_id") @db.Uuid
+  kind         FileKind
+  storageKey   String   @map("storage_key") @db.VarChar(500)
+  publicUrl    String   @map("public_url") @db.VarChar(500)
+  mimeType     String   @map("mime_type") @db.VarChar(120)
+  sizeBytes    Int      @map("size_bytes")
+  originalName String   @map("original_name") @db.VarChar(255)
+  checksum     String?  @db.VarChar(64)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  owner              User     @relation("FileOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  companyLogo        Company? @relation("CompanyLogo")
+  internResume       Intern?  @relation("InternResume")
+  internProfilePhoto Intern?  @relation("InternProfilePhoto")
+
+  @@index([ownerId, kind])
+  @@index([storageKey])
+  @@index([deletedAt])
+  @@map("files")
+}
