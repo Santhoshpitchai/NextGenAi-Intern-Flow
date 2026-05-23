@@ -46,7 +46,11 @@ export const authApi = {
 
   async registerIntern(data: InternSignupFormValues): Promise<AuthResponse> {
     const form = buildInternFormData(data);
-    const res = await apiClient.post<ApiSuccess<AuthResponse>>("/auth/register/intern", form);
+    const res = await apiClient.post<ApiSuccess<AuthResponse>>("/auth/register/intern", form, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return unwrap(res);
   },
 

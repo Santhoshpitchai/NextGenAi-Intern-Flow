@@ -29,7 +29,8 @@ const termsSchema = z.boolean().refine((val) => val === true, {
   message: "You must accept the terms and conditions",
 });
 
-function fileSizeRefine(file: File, maxBytes: number) {
+function fileSizeRefine(file: unknown, maxBytes: number) {
+  if (!(file instanceof File)) return true;
   return file.size <= maxBytes;
 }
 
@@ -68,6 +69,7 @@ export const internSignupSchema = z
       .refine((file) => fileSizeRefine(file, MAX_FILE_SIZE), `Resume must be under ${MAX_FILE_SIZE_MB}MB`)
       .refine(
         (file) => {
+          if (!(file instanceof File)) return true;
           const ext = file.name.split(".").pop()?.toLowerCase();
           const allowed =
             file.type === "application/pdf" ||
@@ -83,7 +85,10 @@ export const internSignupSchema = z
       .refine((file): file is File => file instanceof File, { message: "Profile photo is required" })
       .refine((file) => fileSizeRefine(file, MAX_FILE_SIZE), `Photo must be under ${MAX_FILE_SIZE_MB}MB`)
       .refine(
-        (file) => file.type.startsWith("image/") || /\.(jpe?g|png|webp)$/i.test(file.name),
+        (file) => {
+          if (!(file instanceof File)) return true;
+          return file.type.startsWith("image/") || /\.(jpe?g|png|webp)$/i.test(file.name);
+        },
         { message: "Profile photo must be PNG, JPG, or WEBP" },
       ),
     startDate: z.string().min(1, "Start date is required"),

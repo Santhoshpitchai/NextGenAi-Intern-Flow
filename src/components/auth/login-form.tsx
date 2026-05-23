@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link } from "@tanstack/react-router";
@@ -26,6 +26,7 @@ export function LoginForm() {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormValues>({
@@ -93,7 +94,16 @@ export function LoginForm() {
 
       <div className="flex items-center justify-between text-sm">
         <label className="flex items-center gap-2 cursor-pointer">
-          <Checkbox {...register("remember")} />
+          <Controller
+            control={control}
+            name="remember"
+            render={({ field }) => (
+              <Checkbox
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            )}
+          />
           <span>Remember me</span>
         </label>
         <Link to="/forgot-password" className="font-medium text-primary hover:underline">

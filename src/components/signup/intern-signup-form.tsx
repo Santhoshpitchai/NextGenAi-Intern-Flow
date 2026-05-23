@@ -70,6 +70,8 @@ export function InternSignupForm() {
     register,
     handleSubmit,
     control,
+    watch,
+    setValue,
     setError,
     formState: { errors },
   } = useForm<InternSignupFormValues>({
@@ -77,6 +79,8 @@ export function InternSignupForm() {
     defaultValues,
     mode: "onBlur",
   });
+
+  const terms = watch("terms");
 
   const isSubmitting = registerMutation.isPending;
 
@@ -357,19 +361,12 @@ export function InternSignupForm() {
         />
       </div>
 
-      <Controller
-        name="terms"
-        control={control}
-        rules={{ required: "You must accept the terms and conditions" }}
-        render={({ field }) => (
-          <TermsCheckbox
-            id="intern-terms"
-            checked={!!field.value}
-            disabled={isSubmitting}
-            error={errors.terms?.message}
-            onCheckedChange={field.onChange}
-          />
-        )}
+      <TermsCheckbox
+        id="intern-terms"
+        checked={!!terms}
+        disabled={isSubmitting}
+        error={errors.terms?.message}
+        onCheckedChange={(v) => setValue("terms", v, { shouldValidate: true })}
       />
 
       <Button
