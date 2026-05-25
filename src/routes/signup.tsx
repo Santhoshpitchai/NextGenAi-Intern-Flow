@@ -89,6 +89,7 @@ function SignupPage() {
             <Link to="/login" className="font-semibold text-primary hover:underline">
               Log in
             </Link>
+            
           </p> */}
         </div>
       </div>
