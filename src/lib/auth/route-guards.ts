@@ -7,6 +7,12 @@ import { getDashboardPath } from "@/lib/auth/redirects";
 import type { User, UserRole } from "@/types/auth";
 
 export async function ensureAuthenticated(queryClient: QueryClient): Promise<User> {
+  // During SSR (on the server), localStorage isn't available, so bypass redirect checks
+  // and let the client-side hydration handle the authentication check cleanly.
+  if (typeof window === "undefined") {
+    return { id: "", email: "", role: "INTERN", createdAt: "", phone: null } as User;
+  }
+
   const token = tokenStorage.getAccessToken();
   if (!token) {
     throw redirect({ to: "/login" });
@@ -25,6 +31,9 @@ export async function ensureAuthenticated(queryClient: QueryClient): Promise<Use
 }
 
 export async function ensureGuest(queryClient: QueryClient) {
+  // During SSR, localStorage isn't available. Bypass to let client handle redirect checks.
+  if (typeof window === "undefined") return;
+
   const token = tokenStorage.getAccessToken();
   if (!token) return;
 
@@ -42,6 +51,11 @@ export async function ensureGuest(queryClient: QueryClient) {
 }
 
 export async function ensureRole(queryClient: QueryClient, ...roles: UserRole[]): Promise<User> {
+  // During SSR, bypass roles checks and let client-side router handle it.
+  if (typeof window === "undefined") {
+    return { id: "", email: "", role: "COMPANY_ADMIN", createdAt: "", phone: null } as User;
+  }
+
   const user = await ensureAuthenticated(queryClient);
   if (!roles.includes(user.role)) {
     throw redirect({ to: getDashboardPath(user.role) });

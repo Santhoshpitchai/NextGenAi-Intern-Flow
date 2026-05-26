@@ -6,6 +6,7 @@ import type { ApiSuccess, AuthResponse, User } from "@/types/auth";
 export interface LoginPayload {
   email: string;
   password: string;
+  role?: "INTERN" | "ADMIN";
 }
 
 function buildInternFormData(data: InternSignupFormValues): FormData {
@@ -64,6 +65,13 @@ export const authApi = {
     if (refreshToken) {
       await apiClient.post("/auth/logout", { refreshToken }).catch(() => undefined);
     }
+  },
+
+  async refresh(refreshToken: string): Promise<{ tokens: { accessToken: string; refreshToken: string } }> {
+    const res = await apiClient.post<ApiSuccess<{ accessToken: string; refreshToken: string }>>("/auth/refresh", {
+      refreshToken,
+    });
+    return { tokens: unwrap(res) };
   },
 
   async getMe(): Promise<User> {

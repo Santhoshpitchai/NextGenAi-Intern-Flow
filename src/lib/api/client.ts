@@ -31,20 +31,26 @@ apiClient.interceptors.response.use(
   async (error: AxiosError<ApiErrorBody>) => {
     const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+    // Only attempt refresh for 401 errors on protected endpoints
     if (
       error.response?.status === 401 &&
       original &&
       !original._retry &&
       !original.url?.includes("/auth/login") &&
-      !original.url?.includes("/auth/register")
+      !original.url?.includes("/auth/register") &&
+      !original.url?.includes("/auth/refresh") &&
+      !original.url?.includes("/auth/logout")
     ) {
       const refreshToken = tokenStorage.getRefreshToken();
+      
+      // No refresh token available - clear and notify
       if (!refreshToken) {
         tokenStorage.clear();
         window.dispatchEvent(new CustomEvent("auth:session-expired"));
         return Promise.reject(error);
       }
 
+      // If already refreshing, queue this request
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           refreshQueue.push((token) => {
@@ -58,6 +64,7 @@ apiClient.interceptors.response.use(
         });
       }
 
+      // Mark as retried to prevent infinite loops
       original._retry = true;
       isRefreshing = true;
 
@@ -67,11 +74,18 @@ apiClient.interceptors.response.use(
           { refreshToken },
         );
         const { accessToken, refreshToken: newRefresh } = data.data;
+        
+        // Update tokens
         tokenStorage.setTokens(accessToken, newRefresh);
+        
+        // Process queued requests
         processQueue(accessToken);
+        
+        // Retry original request with new token
         original.headers.Authorization = `Bearer ${accessToken}`;
         return apiClient(original);
-      } catch {
+      } catch (refreshError) {
+        // Refresh failed - clear tokens and notify
         tokenStorage.clear();
         processQueue(null);
         window.dispatchEvent(new CustomEvent("auth:session-expired"));
@@ -81,12 +95,14 @@ apiClient.interceptors.response.use(
       }
     }
 
+    // Handle API error responses
     if (error.response?.data && error.response.data.success === false) {
       return Promise.reject(
         ApiRequestError.fromResponse(error.response.status, error.response.data),
       );
     }
 
+    // Handle network errors
     return Promise.reject(
       new ApiRequestError(error.response?.status ?? 500, error.message || "Network error"),
     );

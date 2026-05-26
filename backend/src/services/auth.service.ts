@@ -10,7 +10,6 @@ import {
 } from "../utils/jwt.js";
 import { hashToken } from "../utils/tokenHash.js";
 import { slugify } from "../utils/slug.js";
-import { createFileRecord } from "./file.service.js";
 import {
   toPublicUser,
   userInclude,
@@ -153,18 +152,30 @@ export async function registerIntern(
       },
     });
 
-    const resumeFile = await createFileRecord(
-      createdUser.id,
-      files.resume!,
-      FileKind.RESUME,
-      "resumes",
-    );
-    const photoFile = await createFileRecord(
-      createdUser.id,
-      files.profilePhoto!,
-      FileKind.PROFILE_PHOTO,
-      "photos",
-    );
+    // Create file records within transaction
+    const resumeFile = await tx.file.create({
+      data: {
+        ownerId: createdUser.id,
+        kind: FileKind.RESUME,
+        storageKey: `resumes/${files.resume!.filename}`,
+        publicUrl: `/uploads/resumes/${files.resume!.filename}`,
+        mimeType: files.resume!.mimetype,
+        sizeBytes: files.resume!.size,
+        originalName: files.resume!.originalname,
+      },
+    });
+
+    const photoFile = await tx.file.create({
+      data: {
+        ownerId: createdUser.id,
+        kind: FileKind.PROFILE_PHOTO,
+        storageKey: `photos/${files.profilePhoto!.filename}`,
+        publicUrl: `/uploads/photos/${files.profilePhoto!.filename}`,
+        mimeType: files.profilePhoto!.mimetype,
+        sizeBytes: files.profilePhoto!.size,
+        originalName: files.profilePhoto!.originalname,
+      },
+    });
 
     const intern = await tx.intern.create({
       data: {
@@ -227,6 +238,19 @@ export async function login(
   const valid = await comparePassword(input.password, user.passwordHash);
   if (!valid) {
     throw ApiError.unauthorized("Invalid email or password");
+  }
+
+  // Validate role selection to prevent cross-login bypass
+  if (input.role) {
+    if (input.role === "ADMIN") {
+      if (user.role !== UserRole.COMPANY_ADMIN && user.role !== UserRole.SUPER_ADMIN) {
+        throw ApiError.unauthorized("Access restricted. This account does not have Admin privileges.");
+      }
+    } else if (input.role === "INTERN") {
+      if (user.role !== UserRole.INTERN) {
+        throw ApiError.unauthorized("Access restricted. This account does not have Intern privileges.");
+      }
+    }
   }
 
   const tokens = await issueTokens(user, meta);

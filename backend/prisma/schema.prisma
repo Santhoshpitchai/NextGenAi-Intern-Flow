@@ -8,6 +8,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -104,6 +105,11 @@ model User {
   tasksCreated      Task[]              @relation("TaskCreator")
   progressEntries   ProgressEntry[]     @relation("ProgressAuthor")
   assignmentsManaged InternshipAssignment[] @relation("AssignmentManager")
+  dailyUpdates     DailyUpdate[]       @relation("DailyUpdateAuthor")
+  requestsCreated  Request[]           @relation("RequestCreator")
+  requestsReviewed Request[]           @relation("RequestReviewer")
+  messagesSent     Message[]           @relation("MessageSender")
+  attendance       Attendance[]        @relation("UserAttendance")
 
   @@index([email])
   @@index([role])
@@ -427,4 +433,119 @@ model File {
   @@index([storageKey])
   @@index([deletedAt])
   @@map("files")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Leaves, Resources, Help Requests & Updates (intern-engagement-service)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum RequestType {
+  LEAVE
+  RESOURCE
+  HELP
+  TIME_OFF
+  OTHER
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Request {
+  id           String        @id @default(uuid()) @db.Uuid
+  createdById  String        @map("created_by_id") @db.Uuid
+  reviewedById String?       @map("reviewed_by_id") @db.Uuid
+  type         RequestType
+  status       RequestStatus @default(PENDING)
+  title        String        @db.VarChar(240)
+  description  String        @db.Text
+  response     String?       @db.Text
+  reviewedAt   DateTime?     @map("reviewed_at") @db.Timestamptz(6)
+  
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime?     @map("deleted_at") @db.Timestamptz(6)
+
+  createdBy    User          @relation("RequestCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  reviewedBy   User?         @relation("RequestReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([createdById])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("requests")
+}
+
+model DailyUpdate {
+  id              String    @id @default(uuid()) @db.Uuid
+  authorId        String    @map("author_id") @db.Uuid
+  summary         String    @db.VarChar(500)
+  accomplishments String?   @db.Text
+  challenges      String?   @db.Text
+  nextSteps       String?   @map("next_steps") @db.Text
+  date            DateTime  @db.Date
+
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  author          User      @relation("DailyUpdateAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@unique([authorId, date])
+  @@index([authorId])
+  @@index([deletedAt])
+  @@map("daily_updates")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Chat / Messages (engagement-messaging-service)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+}
+
+model Message {
+  id        String      @id @default(uuid()) @db.Uuid
+  senderId  String      @map("sender_id") @db.Uuid
+  content   String      @db.Text
+  type      MessageType @default(TEXT)
+  metadata  Json?       @db.JsonB
+  
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime?   @map("deleted_at") @db.Timestamptz(6)
+
+  sender    User        @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("messages")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Attendance tracking (engagement-attendance-service)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Attendance {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  checkIn    DateTime  @map("check_in") @db.Timestamptz(6)
+  checkOut   DateTime? @map("check_out") @db.Timestamptz(6)
+  date       DateTime  @db.Date
+  
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user       User      @relation("UserAttendance", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+  @@map("attendance")
 }

@@ -1,127 +1,340 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Button } from "@/components/ui/button";
-import { ListChecks, CheckCircle2, TrendingUp, Award, Calendar, Upload, MessageSquare, Megaphone, Sparkles } from "lucide-react";
-import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
+import { ListChecks, CheckCircle2, TrendingUp, Award, Calendar, Upload, MessageSquare, Loader2, FileDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { assignmentApi } from "@/services/assignment-api";
+import { taskApi } from "@/services/task-api";
+import { authApi } from "@/services/auth-api";
+import { dailyUpdateApi } from "@/services/daily-update-api";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/intern/")({
   head: () => ({ meta: [{ title: "My Dashboard — InternFlow AI" }] }),
   component: InternDashboard,
 });
 
-const myTasks = [
-  { title: "Implement auth refresh token rotation", by: "Sarah J.", priority: "high", due: "May 16", progress: 65 },
-  { title: "Code review for onboarding flow", by: "James O.", priority: "med", due: "May 18", progress: 30 },
-  { title: "Write integration tests for billing", by: "Sarah J.", priority: "low", due: "May 22", progress: 10 },
-];
-const trend = [{m:"M",v:60},{m:"T",v:78},{m:"W",v:72},{m:"T",v:88},{m:"F",v:92},{m:"S",v:70},{m:"S",v:60}];
-const announcements = [
-  { who: "Sarah J.", time: "1h ago", text: "Sprint planning Friday at 10am — be ready with your top 3 priorities." },
-  { who: "Jane (Admin)", time: "1d ago", text: "Welcome new interns! Onboarding kit is in the shared drive." },
-];
-const badges = ["First Ship", "Bug Crusher", "Sprint Streak ×3", "Team Player"];
 const priorityStyle: Record<string, string> = {
-  high: "bg-destructive/10 text-destructive", med: "bg-warning/10 text-warning", low: "bg-muted text-muted-foreground",
+  HIGH: "bg-destructive/10 text-destructive",
+  URGENT: "bg-destructive/10 text-destructive",
+  MEDIUM: "bg-warning/10 text-warning",
+  LOW: "bg-muted text-muted-foreground",
 };
 
 function InternDashboard() {
+  const navigate = useNavigate();
+  
+  // Fetch user data
+  const { data: user } = useQuery({
+    queryKey: ["current-user"],
+    queryFn: () => authApi.getMe(),
+  });
+
+  // Fetch assignments
+  const { data: assignments, isLoading: assignmentsLoading } = useQuery({
+    queryKey: ["my-assignments"],
+    queryFn: () => assignmentApi.getMyAssignments(),
+  });
+
+  // Fetch tasks
+  const { data: tasks, isLoading: tasksLoading } = useQuery({
+    queryKey: ["my-tasks"],
+    queryFn: () => taskApi.getMyTasks(),
+  });
+
+  // Fetch recent daily updates
+  const { data: recentUpdates } = useQuery({
+    queryKey: ["my-daily-updates"],
+    queryFn: () => dailyUpdateApi.getMyUpdates(7), // Last 7 updates
+  });
+
+  // Calculate stats from real data
+  const activeTasks = tasks?.filter((t) => t.status !== "DONE" && t.status !== "CANCELLED") || [];
+  const completedTasks = tasks?.filter((t) => t.status === "DONE") || [];
+  const userName = user?.internProfile?.fullName?.split(" ")[0] || "there";
+  
+  // Calculate completion rate
+  const totalTasks = tasks?.length || 0;
+  const completionRate = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
+
+  // Get upcoming tasks (next 3 with due dates)
+  const upcomingTasks = activeTasks
+    .filter((t) => t.dueDate)
+    .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
+    .slice(0, 3);
+
+  const isLoading = assignmentsLoading || tasksLoading;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div>
-      <PageHeader title="Welcome, Alex 👋" subtitle="You have 3 tasks due this week and a 92% productivity score."
-        actions={<Button className="bg-gradient-primary text-primary-foreground shadow-glow"><Upload className="size-4" /> Submit Daily Update</Button>} />
+      <PageHeader 
+        title={`Welcome, ${userName} 👋`} 
+        subtitle={`You have ${activeTasks.length} active tasks and ${assignments?.length || 0} assignments.`}
+        actions={
+          <Button 
+            className="bg-gradient-primary text-primary-foreground shadow-glow"
+            onClick={() => navigate({ to: "/intern/updates" })}
+          >
+            <Upload className="size-4" /> Submit Daily Update
+          </Button>
+        } 
+      />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard icon={ListChecks} label="Active Tasks" value="7" tone="primary" />
-        <StatCard icon={CheckCircle2} label="Completed" value="42" delta="6" tone="success" />
-        <StatCard icon={TrendingUp} label="Productivity" value="92%" delta="8%" tone="secondary" />
-        <StatCard icon={Award} label="Badges Earned" value="11" tone="warning" />
+        <StatCard 
+          icon={ListChecks} 
+          label="Active Tasks" 
+          value={activeTasks.length.toString()} 
+          tone="primary" 
+        />
+        <StatCard 
+          icon={CheckCircle2} 
+          label="Completed" 
+          value={completedTasks.length.toString()} 
+          tone="success" 
+        />
+        <StatCard 
+          icon={TrendingUp} 
+          label="Assignments" 
+          value={assignments?.length.toString() || "0"} 
+          tone="secondary" 
+        />
+        <StatCard 
+          icon={Award} 
+          label="Completion Rate" 
+          value={`${completionRate}%`} 
+          tone="warning" 
+        />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+          {/* My Tasks Section */}
           <div className="p-6 rounded-2xl glass shadow-soft">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold">My Tasks</h3>
-              <Button variant="ghost" size="sm">View all</Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate({ to: "/intern/tasks" })}
+              >
+                View all
+              </Button>
             </div>
             <div className="space-y-3">
-              {myTasks.map((t) => (
-                <div key={t.title} className="p-4 rounded-xl border border-border bg-background hover:border-primary/30 transition-colors">
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md", priorityStyle[t.priority])}>{t.priority}</span>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="size-3" /> {t.due}</span>
-                      </div>
-                      <h4 className="font-semibold text-sm">{t.title}</h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">Assigned by {t.by}</p>
-                    </div>
-                    <div className="flex gap-1.5">
-                      <Button variant="outline" size="sm">Upload</Button>
-                      <Button size="sm" className="bg-gradient-primary text-primary-foreground">Done</Button>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-[11px] mb-1"><span className="text-muted-foreground">Progress</span><span className="font-bold">{t.progress}%</span></div>
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden"><div className="h-full bg-gradient-primary" style={{ width: `${t.progress}%` }} /></div>
-                  </div>
+              {upcomingTasks.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <ListChecks className="size-12 mx-auto mb-2 opacity-50" />
+                  <p>No active tasks yet</p>
+                  <p className="text-xs mt-1">Tasks will appear here when assigned by your admin</p>
                 </div>
-              ))}
+              ) : (
+                upcomingTasks.map((t) => (
+                  <div 
+                    key={t.id} 
+                    className="p-4 rounded-xl border border-border bg-background hover:border-primary/30 transition-colors cursor-pointer"
+                    onClick={() => navigate({ to: "/intern/tasks" })}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={cn(
+                            "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md", 
+                            priorityStyle[t.priority] || priorityStyle.MEDIUM
+                          )}>
+                            {t.priority.toLowerCase()}
+                          </span>
+                          {t.dueDate && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Calendar className="size-3" /> 
+                              Due {new Date(t.dueDate).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="font-semibold text-sm">{t.title}</h4>
+                        {t.description && (
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                            {t.description}
+                          </p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Status: <span className="font-medium">{t.status.replace("_", " ")}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
+          {/* Recent Activity Section */}
           <div className="p-6 rounded-2xl glass shadow-soft">
             <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-semibold">Personal Productivity</h3>
-                <p className="text-xs text-muted-foreground">This week</p>
-              </div>
-              <span className="text-xs font-bold text-success bg-success/10 px-2 py-0.5 rounded-full">↑ 8%</span>
+              <h3 className="font-semibold">Recent Activity</h3>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate({ to: "/intern/updates" })}
+              >
+                View all
+              </Button>
             </div>
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={trend}>
-                <defs><linearGradient id="iv" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="oklch(0.74 0.14 210)" stopOpacity={0.5} /><stop offset="100%" stopColor="oklch(0.74 0.14 210)" stopOpacity={0} /></linearGradient></defs>
-                <CartesianGrid stroke="oklch(0.929 0.013 255)" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="m" stroke="oklch(0.554 0.046 257)" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="oklch(0.554 0.046 257)" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ background: "white", border: "1px solid oklch(0.929 0.013 255)", borderRadius: 12 }} />
-                <Area type="monotone" dataKey="v" stroke="oklch(0.74 0.14 210)" strokeWidth={2.5} fill="url(#iv)" />
-              </AreaChart>
-            </ResponsiveContainer>
+            <div className="space-y-3">
+              {!recentUpdates || recentUpdates.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Upload className="size-12 mx-auto mb-2 opacity-50" />
+                  <p>No updates yet</p>
+                  <p className="text-xs mt-1">Submit your first daily update to track progress</p>
+                  <Button 
+                    className="mt-4" 
+                    variant="outline"
+                    onClick={() => navigate({ to: "/intern/updates" })}
+                  >
+                    Submit Update
+                  </Button>
+                </div>
+              ) : (
+                recentUpdates.slice(0, 3).map((update) => (
+                  <div key={update.id} className="p-4 rounded-xl border border-border bg-background">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {new Date(update.date).toLocaleDateString()}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(update.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <h4 className="font-semibold text-sm mb-1">{update.summary}</h4>
+                    {update.accomplishments && (
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {update.accomplishments}
+                      </p>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
 
+        {/* Sidebar */}
         <div className="space-y-6">
-          <div className="p-6 rounded-2xl bg-gradient-primary text-primary-foreground shadow-glow">
-            <Sparkles className="size-5 mb-3" />
-            <h3 className="font-semibold">AI Coach</h3>
-            <p className="text-sm opacity-90 mt-1 leading-relaxed">You're shipping consistently. Try blocking 2-hour deep work sessions to push productivity past 95%.</p>
-          </div>
-
+          {/* Quick Actions */}
           <div className="p-6 rounded-2xl glass shadow-soft">
-            <h3 className="font-semibold mb-4 flex items-center gap-2"><Award className="size-4 text-warning" /> Achievements</h3>
-            <div className="flex flex-wrap gap-2">
-              {badges.map((b) => (
-                <span key={b} className="text-xs px-3 py-1.5 rounded-full bg-warning/10 text-warning font-semibold border border-warning/20">{b}</span>
-              ))}
+            <h3 className="font-semibold mb-4">Quick Actions</h3>
+            <div className="space-y-2">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate({ to: "/intern/tasks" })}
+              >
+                <ListChecks className="size-4" /> View All Tasks
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate({ to: "/intern/updates" })}
+              >
+                <Upload className="size-4" /> Submit Update
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate({ to: "/intern/requests" })}
+              >
+                <MessageSquare className="size-4" /> Create Request
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate({ to: "/intern/calendar" })}
+              >
+                <Calendar className="size-4" /> View Calendar
+              </Button>
             </div>
           </div>
 
+          {/* Assignments Overview */}
           <div className="p-6 rounded-2xl glass shadow-soft">
-            <h3 className="font-semibold mb-4 flex items-center gap-2"><Megaphone className="size-4 text-primary" /> Team Announcements</h3>
-            <div className="space-y-4">
-              {announcements.map((a) => (
-                <div key={a.text} className="text-sm">
-                  <p className="leading-relaxed">{a.text}</p>
-                  <p className="text-xs text-muted-foreground mt-1">— {a.who} · {a.time}</p>
-                </div>
-              ))}
-            </div>
+            <h3 className="font-semibold mb-4">My Assignments</h3>
+            {!assignments || assignments.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground">
+                <p className="text-sm">No assignments yet</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {assignments.map((assignment) => {
+                  const hasAttachment = assignment.notes?.includes("Attachment: 📄");
+                  const attachmentName = hasAttachment 
+                    ? assignment.notes.split("Attachment: 📄 ")[1] 
+                    : null;
+                  const displayNotes = hasAttachment 
+                    ? assignment.notes.split("\n\nAttachment: 📄")[0] 
+                    : assignment.notes;
+
+                  return (
+                    <div key={assignment.id} className="p-3 rounded-lg border border-border bg-background space-y-2">
+                      <h4 className="font-semibold text-sm mb-1">{assignment.title}</h4>
+                      <p className="text-xs text-muted-foreground mb-1">{assignment.company.name}</p>
+                      {displayNotes && (
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {displayNotes}
+                        </p>
+                      )}
+
+                      {hasAttachment && (
+                        <div className="p-2 rounded bg-primary/5 border border-primary/10 flex items-center justify-between text-[11px] mb-2">
+                          <span className="font-semibold text-primary truncate max-w-[80%]">📄 {attachmentName}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="size-5 text-primary hover:bg-primary hover:text-primary-foreground"
+                            onClick={() => toast.success(`Downloaded project briefing: ${attachmentName}`)}
+                          >
+                            <FileDown className="size-3" />
+                          </Button>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40">
+                        <span className={cn(
+                          "px-2 py-0.5 rounded-full font-medium",
+                          assignment.status === "ACTIVE" ? "bg-success/10 text-success" :
+                          assignment.status === "PENDING" ? "bg-warning/10 text-warning" :
+                          "bg-muted text-muted-foreground"
+                        )}>
+                          {assignment.status}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {assignment.tasks.length} tasks
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          <Button variant="outline" className="w-full"><MessageSquare className="size-4" /> Open Team Chat</Button>
+          {/* Team Chat Button */}
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={() => navigate({ to: "/intern/chat" })}
+          >
+            <MessageSquare className="size-4" /> Open Team Chat
+          </Button>
         </div>
       </div>
     </div>

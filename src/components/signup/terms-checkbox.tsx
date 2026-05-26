@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { TermsModal, PrivacyModal } from "@/components/auth/terms-modal";
 
 export interface TermsCheckboxProps {
   id: string;
@@ -19,6 +21,9 @@ export function TermsCheckbox({
   disabled,
   className,
 }: TermsCheckboxProps) {
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+
   return (
     <div className={cn("space-y-2", className)}>
       <div className="flex items-start gap-2.5">
@@ -31,21 +36,27 @@ export function TermsCheckbox({
         />
         <Label htmlFor={id} className="cursor-pointer text-sm font-normal leading-relaxed text-muted-foreground">
           I agree to the{" "}
-          <a
-            href="#"
-            onClick={(event) => event.preventDefault()}
-            className="font-medium text-primary hover:underline"
+          <button
+            type="button"
+            onClick={(event) => {
+              event.preventDefault();
+              setShowTerms(true);
+            }}
+            className="font-medium text-primary hover:underline cursor-pointer bg-transparent border-none p-0 inline-block align-baseline"
           >
             Terms of Service
-          </a>{" "}
+          </button>{" "}
           and{" "}
-          <a
-            href="#"
-            onClick={(event) => event.preventDefault()}
-            className="font-medium text-primary hover:underline"
+          <button
+            type="button"
+            onClick={(event) => {
+              event.preventDefault();
+              setShowPrivacy(true);
+            }}
+            className="font-medium text-primary hover:underline cursor-pointer bg-transparent border-none p-0 inline-block align-baseline"
           >
             Privacy Policy
-          </a>
+          </button>
           .
         </Label>
       </div>
@@ -54,6 +65,10 @@ export function TermsCheckbox({
           {error}
         </p>
       )}
+
+      {/* Terms and Privacy Policy Modals */}
+      <TermsModal open={showTerms} onOpenChange={setShowTerms} />
+      <PrivacyModal open={showPrivacy} onOpenChange={setShowPrivacy} />
     </div>
   );
 }

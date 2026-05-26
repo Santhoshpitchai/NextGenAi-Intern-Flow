@@ -23,12 +23,14 @@ import { Route as InternRequestsRouteImport } from './routes/intern.requests'
 import { Route as InternPerformanceRouteImport } from './routes/intern.performance'
 import { Route as InternChatRouteImport } from './routes/intern.chat'
 import { Route as InternCalendarRouteImport } from './routes/intern.calendar'
+import { Route as InternAttendanceRouteImport } from './routes/intern.attendance'
 import { Route as AdminTasksRouteImport } from './routes/admin.tasks'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminProjectsRouteImport } from './routes/admin.projects'
 import { Route as AdminInternsRouteImport } from './routes/admin.interns'
+import { Route as AdminChatRouteImport } from './routes/admin.chat'
 import { Route as AdminCalendarRouteImport } from './routes/admin.calendar'
 import { Route as AdminAttendanceRouteImport } from './routes/admin.attendance'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
@@ -103,6 +105,11 @@ const InternCalendarRoute = InternCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => InternRoute,
 } as any)
+const InternAttendanceRoute = InternAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => InternRoute,
+} as any)
 const AdminTasksRoute = AdminTasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
@@ -133,6 +140,11 @@ const AdminInternsRoute = AdminInternsRouteImport.update({
   path: '/interns',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminChatRoute = AdminChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCalendarRoute = AdminCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
@@ -159,12 +171,14 @@ export interface FileRoutesByFullPath {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/chat': typeof AdminChatRoute
   '/admin/interns': typeof AdminInternsRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/tasks': typeof AdminTasksRoute
+  '/intern/attendance': typeof InternAttendanceRoute
   '/intern/calendar': typeof InternCalendarRoute
   '/intern/chat': typeof InternChatRoute
   '/intern/performance': typeof InternPerformanceRoute
@@ -182,12 +196,14 @@ export interface FileRoutesByTo {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/chat': typeof AdminChatRoute
   '/admin/interns': typeof AdminInternsRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/tasks': typeof AdminTasksRoute
+  '/intern/attendance': typeof InternAttendanceRoute
   '/intern/calendar': typeof InternCalendarRoute
   '/intern/chat': typeof InternChatRoute
   '/intern/performance': typeof InternPerformanceRoute
@@ -208,12 +224,14 @@ export interface FileRoutesById {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/chat': typeof AdminChatRoute
   '/admin/interns': typeof AdminInternsRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/tasks': typeof AdminTasksRoute
+  '/intern/attendance': typeof InternAttendanceRoute
   '/intern/calendar': typeof InternCalendarRoute
   '/intern/chat': typeof InternChatRoute
   '/intern/performance': typeof InternPerformanceRoute
@@ -235,12 +253,14 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/attendance'
     | '/admin/calendar'
+    | '/admin/chat'
     | '/admin/interns'
     | '/admin/projects'
     | '/admin/reports'
     | '/admin/requests'
     | '/admin/settings'
     | '/admin/tasks'
+    | '/intern/attendance'
     | '/intern/calendar'
     | '/intern/chat'
     | '/intern/performance'
@@ -258,12 +278,14 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/attendance'
     | '/admin/calendar'
+    | '/admin/chat'
     | '/admin/interns'
     | '/admin/projects'
     | '/admin/reports'
     | '/admin/requests'
     | '/admin/settings'
     | '/admin/tasks'
+    | '/intern/attendance'
     | '/intern/calendar'
     | '/intern/chat'
     | '/intern/performance'
@@ -283,12 +305,14 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/attendance'
     | '/admin/calendar'
+    | '/admin/chat'
     | '/admin/interns'
     | '/admin/projects'
     | '/admin/reports'
     | '/admin/requests'
     | '/admin/settings'
     | '/admin/tasks'
+    | '/intern/attendance'
     | '/intern/calendar'
     | '/intern/chat'
     | '/intern/performance'
@@ -408,6 +432,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternCalendarRouteImport
       parentRoute: typeof InternRoute
     }
+    '/intern/attendance': {
+      id: '/intern/attendance'
+      path: '/attendance'
+      fullPath: '/intern/attendance'
+      preLoaderRoute: typeof InternAttendanceRouteImport
+      parentRoute: typeof InternRoute
+    }
     '/admin/tasks': {
       id: '/admin/tasks'
       path: '/tasks'
@@ -450,6 +481,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInternsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/chat': {
+      id: '/admin/chat'
+      path: '/chat'
+      fullPath: '/admin/chat'
+      preLoaderRoute: typeof AdminChatRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/calendar': {
       id: '/admin/calendar'
       path: '/calendar'
@@ -478,6 +516,7 @@ interface AdminRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAttendanceRoute: typeof AdminAttendanceRoute
   AdminCalendarRoute: typeof AdminCalendarRoute
+  AdminChatRoute: typeof AdminChatRoute
   AdminInternsRoute: typeof AdminInternsRoute
   AdminProjectsRoute: typeof AdminProjectsRoute
   AdminReportsRoute: typeof AdminReportsRoute
@@ -491,6 +530,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAttendanceRoute: AdminAttendanceRoute,
   AdminCalendarRoute: AdminCalendarRoute,
+  AdminChatRoute: AdminChatRoute,
   AdminInternsRoute: AdminInternsRoute,
   AdminProjectsRoute: AdminProjectsRoute,
   AdminReportsRoute: AdminReportsRoute,
@@ -503,6 +543,7 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface InternRouteChildren {
+  InternAttendanceRoute: typeof InternAttendanceRoute
   InternCalendarRoute: typeof InternCalendarRoute
   InternChatRoute: typeof InternChatRoute
   InternPerformanceRoute: typeof InternPerformanceRoute
@@ -513,6 +554,7 @@ interface InternRouteChildren {
 }
 
 const InternRouteChildren: InternRouteChildren = {
+  InternAttendanceRoute: InternAttendanceRoute,
   InternCalendarRoute: InternCalendarRoute,
   InternChatRoute: InternChatRoute,
   InternPerformanceRoute: InternPerformanceRoute,

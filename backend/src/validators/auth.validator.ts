@@ -77,6 +77,7 @@ export const registerInternSchema = z
 export const loginSchema = z.object({
   email: z.string().email("Enter a valid email address"),
   password: z.string().min(1, "Password is required"),
+  role: z.enum(["INTERN", "ADMIN"]).optional(),
 });
 
 export const logoutSchema = z.object({
