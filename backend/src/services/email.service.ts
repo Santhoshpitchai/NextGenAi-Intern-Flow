@@ -8,25 +8,35 @@ let transporter: nodemailer.Transporter | null = null;
 
 if (!isMockMode) {
   const isGmail = env.SMTP_HOST.toLowerCase().includes("gmail");
-  
+
   transporter = nodemailer.createTransport(
     isGmail
       ? {
-          service: "gmail",
+          host: "smtp.gmail.com",
+          port: 587,
+          secure: false, // STARTTLS on 587
+          family: 4,     // Force IPv4 — Render free tier blocks IPv6
           auth: {
             user: env.SMTP_USER,
             pass: env.SMTP_PASS,
+          },
+          tls: {
+            rejectUnauthorized: false,
           },
         }
       : {
           host: env.SMTP_HOST,
-          port: env.SMTP_PORT,
-          secure: env.SMTP_PORT === 465,
+          port: env.SMTP_PORT === 465 ? 587 : env.SMTP_PORT, // fallback 465→587
+          secure: false,
+          family: 4, // Force IPv4
           auth: {
             user: env.SMTP_USER,
             pass: env.SMTP_PASS,
           },
-        }
+          tls: {
+            rejectUnauthorized: false,
+          },
+        },
   );
 }
 
