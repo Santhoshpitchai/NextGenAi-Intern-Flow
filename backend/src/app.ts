@@ -9,6 +9,16 @@ import routes from "./routes/index.js";
 import { notFoundHandler, errorHandler } from "./middleware/error.middleware.js";
 import { globalLimiter } from "./middleware/rate-limit.middleware.js";
 
+function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return true;
+  // Allow exact matches from CORS_ORIGIN env var
+  if (corsOrigins.includes(origin)) return true;
+  // Allow all Cloudflare Pages preview deployments
+  if (origin.endsWith(".nextgenai-intern-flow.pages.dev")) return true;
+  if (origin === "https://nextgenai-intern-flow.pages.dev") return true;
+  return false;
+}
+
 export function createApp() {
   const app = express();
 
@@ -18,7 +28,13 @@ export function createApp() {
   app.use(helmet());
   app.use(
     cors({
-      origin: corsOrigins,
+      origin: (origin, callback) => {
+        if (isAllowedOrigin(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error(`CORS: origin ${origin} not allowed`));
+        }
+      },
       credentials: true,
     }),
   );
