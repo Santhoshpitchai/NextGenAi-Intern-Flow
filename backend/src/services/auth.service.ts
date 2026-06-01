@@ -158,6 +158,24 @@ export async function registerIntern(
 
   const passwordHash = await hashPassword(input.password);
 
+  // Determine file URLs — Cloudinary sets file.path to the secure_url in production
+  const resumeIsCloudinary = files.resume.path?.startsWith("http");
+  const photoIsCloudinary = files.profilePhoto.path?.startsWith("http");
+
+  const resumePublicUrl = resumeIsCloudinary
+    ? files.resume.path
+    : `/uploads/resumes/${files.resume.filename}`;
+  const photoPublicUrl = photoIsCloudinary
+    ? files.profilePhoto.path
+    : `/uploads/photos/${files.profilePhoto.filename}`;
+
+  const resumeStorageKey = resumeIsCloudinary
+    ? files.resume.filename
+    : `resumes/${files.resume.filename}`;
+  const photoStorageKey = photoIsCloudinary
+    ? files.profilePhoto.filename
+    : `photos/${files.profilePhoto.filename}`;
+
   const user = await prisma.$transaction(async (tx) => {
     const createdUser = await tx.user.create({
       data: {
@@ -173,8 +191,8 @@ export async function registerIntern(
       data: {
         ownerId: createdUser.id,
         kind: FileKind.RESUME,
-        storageKey: `resumes/${files.resume!.filename}`,
-        publicUrl: `/uploads/resumes/${files.resume!.filename}`,
+        storageKey: resumeStorageKey,
+        publicUrl: resumePublicUrl,
         mimeType: files.resume!.mimetype,
         sizeBytes: files.resume!.size,
         originalName: files.resume!.originalname,
@@ -185,8 +203,8 @@ export async function registerIntern(
       data: {
         ownerId: createdUser.id,
         kind: FileKind.PROFILE_PHOTO,
-        storageKey: `photos/${files.profilePhoto!.filename}`,
-        publicUrl: `/uploads/photos/${files.profilePhoto!.filename}`,
+        storageKey: photoStorageKey,
+        publicUrl: photoPublicUrl,
         mimeType: files.profilePhoto!.mimetype,
         sizeBytes: files.profilePhoto!.size,
         originalName: files.profilePhoto!.originalname,
@@ -223,14 +241,20 @@ export async function registerIntern(
       }
     }
 
+    // Upsert skills outside transaction to avoid timeout, collect IDs first
+    const skillIds: string[] = [];
     for (const [slug, name] of uniqueSkills.entries()) {
       const skill = await tx.skill.upsert({
         where: { slug },
         create: { name, slug },
         update: { name },
       });
+      skillIds.push(skill.id);
+    }
+
+    for (const skillId of skillIds) {
       await tx.internSkill.create({
-        data: { internId: intern.id, skillId: skill.id },
+        data: { internId: intern.id, skillId },
       });
     }
 
@@ -238,7 +262,7 @@ export async function registerIntern(
       where: { id: createdUser.id },
       include: userInclude,
     });
-  });
+  }, { timeout: 30000 });
 
   const verificationToken = signVerificationToken(user.id, user.email);
   emailService.sendVerificationEmail(user.email, verificationToken).catch((err) => {
