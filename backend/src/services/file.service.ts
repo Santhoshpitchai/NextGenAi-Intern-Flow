@@ -8,13 +8,20 @@ export async function createFileRecord(
   kind: FileKind,
   subfolder: string,
 ) {
-  const storageKey = `${subfolder}/${upload.filename}`;
+  // When using Cloudinary, multer-storage-cloudinary puts the full URL in upload.path
+  // and the public_id in upload.filename. Use the Cloudinary URL if available.
+  const isCloudinaryUrl =
+    upload.path && (upload.path.startsWith("http://") || upload.path.startsWith("https://"));
+
+  const publicUrl = isCloudinaryUrl ? upload.path : toPublicFileUrl(`${subfolder}/${upload.filename}`);
+  const storageKey = isCloudinaryUrl ? upload.filename : `${subfolder}/${upload.filename}`;
+
   return prisma.file.create({
     data: {
       ownerId,
       kind,
       storageKey,
-      publicUrl: toPublicFileUrl(storageKey),
+      publicUrl,
       mimeType: upload.mimetype,
       sizeBytes: upload.size,
       originalName: upload.originalname,
