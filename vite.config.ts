@@ -1,18 +1,17 @@
 import { defineConfig } from "vite";
-import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import tailwindcss from "@tailwindcss/vite";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  plugins: [tanstackStart(), react(), tailwindcss(), viteTsConfigPaths()],
-  server: {
-    proxy: {
-      "/uploads": {
-        target: process.env.VITE_API_URL?.replace('/api/v1', '') || "http://localhost:4000",
-        changeOrigin: true,
-      },
-    },
+  plugins: [
+    TanStackRouterVite({ routesDirectory: "./src/routes", generatedRouteTree: "./src/routeTree.gen.ts" }),
+    react(),
+    tailwindcss(),
+    viteTsConfigPaths(),
+  ],
+  build: {
+    outDir: "dist/client",
   },
-
 });
