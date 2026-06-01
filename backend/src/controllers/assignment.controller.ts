@@ -6,7 +6,7 @@ import type { CreateAssignmentInput } from "../validators/assignment.validator.j
 
 export const createAssignment = asyncHandler(async (req: Request, res: Response) => {
   const assignment = await assignmentService.createAssignment(
-    req.body as CreateAssignmentInput,
+    req.body as any,
     req.user!.id,
   );
   sendSuccess(res, 201, "Assignment created successfully", assignment);
