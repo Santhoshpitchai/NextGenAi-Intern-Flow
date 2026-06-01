@@ -9,9 +9,21 @@ export default defineConfig({
   server: {
     proxy: {
       "/uploads": {
-        target: "http://localhost:4000",
+        target: process.env.VITE_API_URL?.replace('/api/v1', '') || "http://localhost:4000",
         changeOrigin: true,
       },
     },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-accordion', '@radix-ui/react-alert-dialog'],
+        },
+      },
+    },
+  },
+});
   },
 });
