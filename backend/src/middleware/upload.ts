@@ -15,10 +15,10 @@ const cloudinaryStorage = new CloudinaryStorage({
 
 // Local storage for development
 const localStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_req, _file, cb) => {
     cb(null, process.env.UPLOAD_DIR || 'uploads');
   },
-  filename: (req, file, cb) => {
+  filename: (_req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
@@ -32,7 +32,7 @@ const upload = multer({
   limits: {
     fileSize: (parseInt(process.env.MAX_FILE_SIZE_MB || '5') * 1024 * 1024), // Convert MB to bytes
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|pdf|doc|docx/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
