@@ -13,7 +13,7 @@ export interface InternProfile {
   resumeUrl: string | null;
   profilePhotoUrl: string | null;
   startDate: string;
-  endDate: string;
+  endDate: string | null;
 }
 
 export interface CompanyAdminProfile {
@@ -42,7 +42,8 @@ export interface AuthTokens {
 
 export interface AuthResponse {
   user: User;
-  tokens: AuthTokens;
+  tokens?: AuthTokens;
+  requiresVerification?: boolean;
 }
 
 export interface ApiSuccess<T> {

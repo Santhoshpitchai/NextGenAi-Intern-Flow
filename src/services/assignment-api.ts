@@ -75,7 +75,7 @@ export const assignmentApi = {
   }): Promise<{ assignments: Assignment[]; pagination: any }> {
     const res = await apiClient.get<ApiSuccess<{ assignments: Assignment[]; pagination: any }>>(
       "/assignments",
-      { params }
+      { params },
     );
     return unwrap(res);
   },

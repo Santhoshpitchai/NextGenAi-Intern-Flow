@@ -6,8 +6,16 @@ import { Loader2, TrendingUp, Target, Award, Star, ListTodo } from "lucide-react
 import { assignmentApi } from "@/services/assignment-api";
 import { taskApi } from "@/services/task-api";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  RadialBarChart, RadialBar, PolarAngleAxis
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  RadialBarChart,
+  RadialBar,
+  PolarAngleAxis,
 } from "recharts";
 import { cn } from "@/lib/utils";
 
@@ -36,10 +44,10 @@ function InternPerformance() {
   }
 
   const totalTasks = tasks?.length || 0;
-  const completedTasks = tasks?.filter(t => t.status === "DONE").length || 0;
-  const inProgressTasks = tasks?.filter(t => t.status === "IN_PROGRESS").length || 0;
-  const inReviewTasks = tasks?.filter(t => t.status === "IN_REVIEW").length || 0;
-  const todoTasks = tasks?.filter(t => t.status === "TODO").length || 0;
+  const completedTasks = tasks?.filter((t) => t.status === "DONE").length || 0;
+  const inProgressTasks = tasks?.filter((t) => t.status === "IN_PROGRESS").length || 0;
+  const inReviewTasks = tasks?.filter((t) => t.status === "IN_REVIEW").length || 0;
+  const todoTasks = tasks?.filter((t) => t.status === "TODO").length || 0;
   const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   // Recharts task distribution data
@@ -51,10 +59,29 @@ function InternPerformance() {
   ];
 
   const getPerformanceRating = (rate: number) => {
-    if (rate >= 90) return { label: "Excellent", color: "text-success bg-success/10", desc: "Top performer with high velocity and high-quality deliverables." };
-    if (rate >= 70) return { label: "Good / Solid", color: "text-primary bg-primary/10", desc: "Consistently completes deliverables on time." };
-    if (rate > 0) return { label: "Improving", color: "text-warning bg-warning/10", desc: "Actively working on active tasks." };
-    return { label: "Awaiting Tasks", color: "text-muted-foreground bg-muted", desc: "Complete assigned tasks to unlock your performance metrics." };
+    if (rate >= 90)
+      return {
+        label: "Excellent",
+        color: "text-success bg-success/10",
+        desc: "Top performer with high velocity and high-quality deliverables.",
+      };
+    if (rate >= 70)
+      return {
+        label: "Good / Solid",
+        color: "text-primary bg-primary/10",
+        desc: "Consistently completes deliverables on time.",
+      };
+    if (rate > 0)
+      return {
+        label: "Improving",
+        color: "text-warning bg-warning/10",
+        desc: "Actively working on active tasks.",
+      };
+    return {
+      label: "Awaiting Tasks",
+      color: "text-muted-foreground bg-muted",
+      desc: "Complete assigned tasks to unlock your performance metrics.",
+    };
   };
 
   const rating = getPerformanceRating(completionRate);
@@ -73,7 +100,9 @@ function InternPerformance() {
               <Target className="size-6" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Total Assigned Tasks</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                Total Assigned Tasks
+              </p>
               <p className="text-3xl font-bold mt-0.5">{totalTasks}</p>
             </div>
           </div>
@@ -85,7 +114,9 @@ function InternPerformance() {
               <TrendingUp className="size-6" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Completed Milestones</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                Completed Milestones
+              </p>
               <p className="text-3xl font-bold mt-0.5">{completedTasks}</p>
             </div>
           </div>
@@ -97,7 +128,9 @@ function InternPerformance() {
               <Award className="size-6" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Overall Score</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                Overall Score
+              </p>
               <p className="text-3xl font-bold mt-0.5">{completionRate}%</p>
             </div>
           </div>
@@ -109,15 +142,27 @@ function InternPerformance() {
         <Card className="lg:col-span-2 p-6 rounded-2xl glass shadow-soft">
           <div className="mb-4">
             <h3 className="font-semibold text-base">Workload Velocity</h3>
-            <p className="text-xs text-muted-foreground">Distribution of milestones by current execution stage</p>
+            <p className="text-xs text-muted-foreground">
+              Distribution of milestones by current execution stage
+            </p>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="oklch(0.929 0.013 255)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="oklch(0.929 0.013 255)"
+                />
                 <XAxis dataKey="name" fontSize={11} axisLine={false} tickLine={false} />
                 <YAxis fontSize={11} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: "12px", background: "white", border: "1px solid oklch(0.929 0.013 255)" }} />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "12px",
+                    background: "white",
+                    border: "1px solid oklch(0.929 0.013 255)",
+                  }}
+                />
                 <Bar dataKey="count" radius={[8, 8, 0, 0]} maxBarSize={45}>
                   {chartData.map((entry, index) => (
                     <Bar key={`bar-${index}`} fill={entry.fill} dataKey="count" />
@@ -135,24 +180,34 @@ function InternPerformance() {
               <Star className="size-5 text-warning fill-warning" />
               <h3 className="font-semibold text-base">Evaluation Remarks</h3>
             </div>
-            <p className="text-xs text-muted-foreground mb-4">Official grading and remarks synced from your active projects</p>
-            
+            <p className="text-xs text-muted-foreground mb-4">
+              Official grading and remarks synced from your active projects
+            </p>
+
             <div className="p-4 rounded-xl bg-card border border-border mb-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-muted-foreground uppercase">Grade Tier</span>
-                <span className={cn("px-2.5 py-0.5 rounded-full text-xs font-bold uppercase", rating.color)}>
+                <span className="text-xs font-semibold text-muted-foreground uppercase">
+                  Grade Tier
+                </span>
+                <span
+                  className={cn(
+                    "px-2.5 py-0.5 rounded-full text-xs font-bold uppercase",
+                    rating.color,
+                  )}
+                >
                   {rating.label}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed mt-2">
-                {rating.desc}
-              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed mt-2">{rating.desc}</p>
             </div>
           </div>
 
           <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/10 text-xs">
             <p className="font-semibold text-primary mb-1">💡 Tip for growth</p>
-            <p className="text-muted-foreground">Keep completing tasks on or before the deadline to automatically boost your overall score and grade tier!</p>
+            <p className="text-muted-foreground">
+              Keep completing tasks on or before the deadline to automatically boost your overall
+              score and grade tier!
+            </p>
           </div>
         </Card>
       </div>
@@ -162,24 +217,27 @@ function InternPerformance() {
         <h3 className="font-semibold text-base mb-4 flex items-center gap-2">
           <ListTodo className="size-5 text-primary" /> Active Project Milestones
         </h3>
-        
+
         {!assignments || assignments.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             No active project milestones found.
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-4">
-            {assignments.map(assignment => {
-              const completed = assignment.tasks.filter(t => t.status === "DONE").length;
+            {assignments.map((assignment) => {
+              const completed = assignment.tasks.filter((t) => t.status === "DONE").length;
               const total = assignment.tasks.length;
               const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
               const hasAttachment = assignment.notes?.includes("Attachment: 📄");
-              const displayNotes = hasAttachment 
-                ? assignment.notes.split("\n\nAttachment: 📄")[0] 
+              const displayNotes = hasAttachment
+                ? assignment.notes.split("\n\nAttachment: 📄")[0]
                 : assignment.notes;
 
               return (
-                <div key={assignment.id} className="p-4 border border-border rounded-xl bg-card hover:border-primary/30 transition-all flex flex-col justify-between">
+                <div
+                  key={assignment.id}
+                  className="p-4 border border-border rounded-xl bg-card hover:border-primary/30 transition-all flex flex-col justify-between"
+                >
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-bold uppercase text-primary bg-primary/10 px-2 py-0.5 rounded">
@@ -189,7 +247,9 @@ function InternPerformance() {
                         {completed}/{total} Tasks Done
                       </span>
                     </div>
-                    <h4 className="font-semibold text-sm text-foreground leading-snug mb-1">{assignment.title}</h4>
+                    <h4 className="font-semibold text-sm text-foreground leading-snug mb-1">
+                      {assignment.title}
+                    </h4>
                     <p className="text-xs text-muted-foreground mb-3">{assignment.company.name}</p>
                     {displayNotes && (
                       <p className="text-xs text-muted-foreground italic mb-4 line-clamp-2 bg-muted/40 p-2 rounded">
@@ -197,7 +257,7 @@ function InternPerformance() {
                       </p>
                     )}
                   </div>
-                  
+
                   <div>
                     <div className="flex justify-between text-[11px] mb-1">
                       <span className="text-muted-foreground">Sprint Completion</span>

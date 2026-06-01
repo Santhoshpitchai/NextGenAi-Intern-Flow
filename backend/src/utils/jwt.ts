@@ -15,6 +15,12 @@ export interface RefreshTokenPayload {
   jti: string;
 }
 
+export interface VerificationTokenPayload {
+  sub: string;
+  email: string;
+  type: "verify";
+}
+
 export function signAccessToken(user: AuthUser): string {
   const payload: AccessTokenPayload = {
     sub: user.id,
@@ -49,6 +55,25 @@ export function verifyAccessToken(token: string): AccessTokenPayload {
 export function verifyRefreshToken(token: string): RefreshTokenPayload {
   const payload = jwt.verify(token, env.JWT_REFRESH_SECRET) as RefreshTokenPayload;
   if (payload.type !== "refresh") {
+    throw new Error("Invalid token type");
+  }
+  return payload;
+}
+
+export function signVerificationToken(userId: string, email: string): string {
+  const payload: VerificationTokenPayload = {
+    sub: userId,
+    email,
+    type: "verify",
+  };
+  return jwt.sign(payload, env.JWT_ACCESS_SECRET, {
+    expiresIn: "24h",
+  } as jwt.SignOptions);
+}
+
+export function verifyVerificationToken(token: string): VerificationTokenPayload {
+  const payload = jwt.verify(token, env.JWT_ACCESS_SECRET) as VerificationTokenPayload;
+  if (payload.type !== "verify") {
     throw new Error("Invalid token type");
   }
   return payload;

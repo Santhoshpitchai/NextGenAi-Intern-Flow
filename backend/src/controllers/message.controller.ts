@@ -16,7 +16,8 @@ export const messageController = {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
       const before = req.query.before ? new Date(req.query.before as string) : undefined;
-      const messages = await messageService.getMessages(limit, before);
+      const userId = req.user!.id;
+      const messages = await messageService.getMessages(userId, limit, before);
       res.json(messages);
     } catch (error) {
       next(error);

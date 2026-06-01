@@ -12,18 +12,26 @@ export function Footer() {
         <div className="md:col-span-1">
           <Logo />
           <p className="mt-4 text-sm text-muted-foreground max-w-xs">
-            The definitive platform for future talent management. Scale your intern programs with smart automation.
+            The definitive platform for future talent management. Scale your intern programs with
+            smart automation.
           </p>
         </div>
         {[
           { title: "Product", items: ["Features", "Pricing", "Integrations", "Changelog"] },
           { title: "Company", items: ["About", "Customers", "Careers", "Press"] },
-          { title: "Resources", items: ["Documentation", "Help Center", "API Reference", "Status"] },
+          {
+            title: "Resources",
+            items: ["Documentation", "Help Center", "API Reference", "Status"],
+          },
         ].map((c) => (
           <div key={c.title}>
             <h4 className="font-semibold mb-4 text-sm">{c.title}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              {c.items.map((i) => <li key={i} className="hover:text-primary cursor-pointer transition-colors">{i}</li>)}
+              {c.items.map((i) => (
+                <li key={i} className="hover:text-primary cursor-pointer transition-colors">
+                  {i}
+                </li>
+              ))}
             </ul>
           </div>
         ))}

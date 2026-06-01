@@ -1,7 +1,15 @@
 import { PageHeader } from "./PageHeader";
 import { Sparkles } from "lucide-react";
 
-export function ComingSoon({ title, subtitle, hint }: { title: string; subtitle?: string; hint?: string }) {
+export function ComingSoon({
+  title,
+  subtitle,
+  hint,
+}: {
+  title: string;
+  subtitle?: string;
+  hint?: string;
+}) {
   return (
     <div>
       <PageHeader title={title} subtitle={subtitle} />
@@ -11,7 +19,8 @@ export function ComingSoon({ title, subtitle, hint }: { title: string; subtitle?
         </div>
         <h3 className="mt-6 text-xl font-bold">Module ready to wire up</h3>
         <p className="text-muted-foreground mt-2 max-w-sm mx-auto text-sm">
-          {hint ?? "This screen is part of the design system. Connect it to your backend to enable live data."}
+          {hint ??
+            "This screen is part of the design system. Connect it to your backend to enable live data."}
         </p>
       </div>
     </div>

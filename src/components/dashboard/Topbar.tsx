@@ -1,7 +1,18 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
-  Bell, Search, MessageSquare, Moon, Sun, LogOut, Loader2,
-  LayoutDashboard, FolderKanban, ListChecks, CalendarClock, CheckCircle2, Users
+  Bell,
+  Search,
+  MessageSquare,
+  Moon,
+  Sun,
+  LogOut,
+  Loader2,
+  LayoutDashboard,
+  FolderKanban,
+  ListChecks,
+  CalendarClock,
+  CheckCircle2,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
@@ -11,8 +22,22 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { attendanceApi } from "@/services/attendance-api";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { notificationApi } from "@/services/notification-api";
 import { taskApi } from "@/services/task-api";
@@ -31,7 +56,10 @@ export function Topbar({ user: routeUser }: { user?: User }) {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("theme");
       if (saved) return saved === "dark";
-      return document.documentElement.classList.contains("dark") || window.matchMedia("(prefers-color-scheme: dark)").matches;
+      return (
+        document.documentElement.classList.contains("dark") ||
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      );
     }
     return false;
   });
@@ -131,7 +159,7 @@ export function Topbar({ user: routeUser }: { user?: User }) {
           </kbd>
         </div>
       </div>
-      
+
       <div className="flex items-center gap-2">
         {/* Mobile Search Button */}
         <Button
@@ -163,7 +191,9 @@ export function Topbar({ user: routeUser }: { user?: User }) {
           variant="ghost"
           size="icon"
           className="relative text-muted-foreground cursor-pointer"
-          onClick={() => navigate({ to: user?.role.includes("ADMIN") ? "/admin/chat" : "/intern/chat" })}
+          onClick={() =>
+            navigate({ to: user?.role.includes("ADMIN") ? "/admin/chat" : "/intern/chat" })
+          }
         >
           <MessageSquare className="size-4" />
           <span className="absolute right-2 top-2 size-1.5 rounded-full bg-secondary" />
@@ -172,16 +202,25 @@ export function Topbar({ user: routeUser }: { user?: User }) {
         {/* Real-time Notifications Popover */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative text-muted-foreground cursor-pointer">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative text-muted-foreground cursor-pointer"
+            >
               <Bell className="size-4" />
               {hasUnread && (
                 <span className="absolute right-2 top-1.5 size-2 rounded-full bg-destructive ring-2 ring-background animate-pulse" />
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80 p-0 shadow-medium border-border/80 bg-background/95 backdrop-blur-md rounded-2xl overflow-hidden" align="end">
+          <PopoverContent
+            className="w-80 p-0 shadow-medium border-border/80 bg-background/95 backdrop-blur-md rounded-2xl overflow-hidden"
+            align="end"
+          >
             <div className="flex items-center justify-between border-b border-border/60 px-4 py-3 bg-muted/40">
-              <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Notifications</span>
+              <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
+                Notifications
+              </span>
               {hasUnread && (
                 <button
                   onClick={async () => {
@@ -222,7 +261,9 @@ export function Topbar({ user: routeUser }: { user?: User }) {
                       }`}
                     >
                       <div className="flex justify-between items-start gap-1">
-                        <span className={`text-xs font-bold leading-tight ${isUnread ? "text-foreground font-extrabold" : "text-foreground/70"}`}>
+                        <span
+                          className={`text-xs font-bold leading-tight ${isUnread ? "text-foreground font-extrabold" : "text-foreground/70"}`}
+                        >
                           {notification.title}
                         </span>
                         <span className="text-[9px] text-muted-foreground shrink-0">
@@ -254,19 +295,35 @@ export function Topbar({ user: routeUser }: { user?: User }) {
         >
           {loggingOut ? <Loader2 className="size-4 animate-spin" /> : <LogOut className="size-4" />}
         </Button>
-        
+
         <div className="ml-2 flex items-center gap-3 border-l border-border pl-3">
           <div className="hidden text-right sm:block">
             <div className="text-sm font-semibold leading-tight">{displayName}</div>
             <div className="text-[11px] text-muted-foreground">{displayRole}</div>
           </div>
-          <div className="grid size-9 place-items-center rounded-full bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-soft">
-            {displayName
-              .split(" ")
-              .map((s) => s[0])
-              .join("")
-              .slice(0, 2)
-              .toUpperCase()}
+          <div className="grid size-9 place-items-center rounded-full bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-soft overflow-hidden border border-primary/20 shrink-0">
+            {user?.internProfile?.profilePhotoUrl ? (
+              <img
+                src={user.internProfile.profilePhotoUrl}
+                alt={displayName}
+                className="size-full object-cover"
+              />
+            ) : user?.companyAdminProfile?.logoUrl ? (
+              <img
+                src={user.companyAdminProfile.logoUrl}
+                alt={displayName}
+                className="size-full object-cover"
+              />
+            ) : (
+              <span>
+                {displayName
+                  .split(" ")
+                  .map((s) => s[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase()}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -276,50 +333,100 @@ export function Topbar({ user: routeUser }: { user?: User }) {
         <CommandInput placeholder="Type a command or search terms..." />
         <CommandList className="max-h-[350px] p-2">
           <CommandEmpty>No results found.</CommandEmpty>
-          
+
           <CommandGroup heading="Quick Navigation">
             {user?.role.includes("ADMIN") ? (
               <>
-                <CommandItem onSelect={() => { setSearchOpen(false); navigate({ to: "/admin" }); }}>
+                <CommandItem
+                  onSelect={() => {
+                    setSearchOpen(false);
+                    navigate({ to: "/admin" });
+                  }}
+                >
                   <LayoutDashboard className="mr-2 size-4 text-primary" />
                   <span>Admin Dashboard</span>
                 </CommandItem>
-                <CommandItem onSelect={() => { setSearchOpen(false); navigate({ to: "/admin/interns" }); }}>
+                <CommandItem
+                  onSelect={() => {
+                    setSearchOpen(false);
+                    navigate({ to: "/admin/interns" });
+                  }}
+                >
                   <Users className="mr-2 size-4 text-primary" />
                   <span>Workspace Interns Directory</span>
                 </CommandItem>
-                <CommandItem onSelect={() => { setSearchOpen(false); navigate({ to: "/admin/projects" }); }}>
+                <CommandItem
+                  onSelect={() => {
+                    setSearchOpen(false);
+                    navigate({ to: "/admin/projects" });
+                  }}
+                >
                   <FolderKanban className="mr-2 size-4 text-primary" />
                   <span>Projects & Assignments</span>
                 </CommandItem>
-                <CommandItem onSelect={() => { setSearchOpen(false); navigate({ to: "/admin/tasks" }); }}>
+                <CommandItem
+                  onSelect={() => {
+                    setSearchOpen(false);
+                    navigate({ to: "/admin/tasks" });
+                  }}
+                >
                   <ListChecks className="mr-2 size-4 text-primary" />
                   <span>Milestone Sprints & Tasks</span>
                 </CommandItem>
-                <CommandItem onSelect={() => { setSearchOpen(false); navigate({ to: "/admin/chat" }); }}>
+                <CommandItem
+                  onSelect={() => {
+                    setSearchOpen(false);
+                    navigate({ to: "/admin/chat" });
+                  }}
+                >
                   <MessageSquare className="mr-2 size-4 text-primary" />
                   <span>Team Chat & Loop Mail</span>
                 </CommandItem>
-                <CommandItem onSelect={() => { setSearchOpen(false); navigate({ to: "/admin/attendance" }); }}>
+                <CommandItem
+                  onSelect={() => {
+                    setSearchOpen(false);
+                    navigate({ to: "/admin/attendance" });
+                  }}
+                >
                   <CalendarClock className="mr-2 size-4 text-primary" />
                   <span>Attendance Auditing</span>
                 </CommandItem>
               </>
             ) : (
               <>
-                <CommandItem onSelect={() => { setSearchOpen(false); navigate({ to: "/intern" }); }}>
+                <CommandItem
+                  onSelect={() => {
+                    setSearchOpen(false);
+                    navigate({ to: "/intern" });
+                  }}
+                >
                   <LayoutDashboard className="mr-2 size-4 text-primary" />
                   <span>Intern Dashboard</span>
                 </CommandItem>
-                <CommandItem onSelect={() => { setSearchOpen(false); navigate({ to: "/intern/tasks" }); }}>
+                <CommandItem
+                  onSelect={() => {
+                    setSearchOpen(false);
+                    navigate({ to: "/intern/tasks" });
+                  }}
+                >
                   <ListChecks className="mr-2 size-4 text-primary" />
                   <span>Assigned Sprints & Tasks</span>
                 </CommandItem>
-                <CommandItem onSelect={() => { setSearchOpen(false); navigate({ to: "/intern/chat" }); }}>
+                <CommandItem
+                  onSelect={() => {
+                    setSearchOpen(false);
+                    navigate({ to: "/intern/chat" });
+                  }}
+                >
                   <MessageSquare className="mr-2 size-4 text-primary" />
                   <span>Team Chat & Loop Mail</span>
                 </CommandItem>
-                <CommandItem onSelect={() => { setSearchOpen(false); navigate({ to: "/intern/attendance" }); }}>
+                <CommandItem
+                  onSelect={() => {
+                    setSearchOpen(false);
+                    navigate({ to: "/intern/attendance" });
+                  }}
+                >
                   <CalendarClock className="mr-2 size-4 text-primary" />
                   <span>Check In / Check Out Session</span>
                 </CommandItem>
@@ -340,7 +447,9 @@ export function Topbar({ user: routeUser }: { user?: User }) {
                 >
                   <CheckCircle2 className="mr-2 size-4 text-green-500" />
                   <span className="font-medium">{t.title}</span>
-                  <span className="ml-2 text-[10px] text-muted-foreground uppercase">({t.priority})</span>
+                  <span className="ml-2 text-[10px] text-muted-foreground uppercase">
+                    ({t.priority})
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -359,7 +468,9 @@ export function Topbar({ user: routeUser }: { user?: User }) {
                 >
                   <CheckCircle2 className="mr-2 size-4 text-green-500" />
                   <span className="font-medium">{t.title}</span>
-                  <span className="ml-2 text-[10px] text-muted-foreground uppercase">({t.priority})</span>
+                  <span className="ml-2 text-[10px] text-muted-foreground uppercase">
+                    ({t.priority})
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -373,14 +484,15 @@ export function Topbar({ user: routeUser }: { user?: User }) {
           <DialogHeader>
             <DialogTitle>Active Session Detected</DialogTitle>
             <DialogDescription className="text-sm">
-              Please check the attendance. Do you want to stop the check-in and check-out before logging out? If yes, please redirect to attendance to stop your session.
+              Please check the attendance. Do you want to stop the check-in and check-out before
+              logging out? If yes, please redirect to attendance to stop your session.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4 gap-2">
             <Button variant="outline" onClick={() => setShowLogoutGuard(false)}>
               Cancel
             </Button>
-            <Button 
+            <Button
               className="bg-primary text-primary-foreground font-bold shadow-soft"
               onClick={() => {
                 setShowLogoutGuard(false);

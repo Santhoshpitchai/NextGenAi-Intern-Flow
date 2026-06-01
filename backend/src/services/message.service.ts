@@ -1,7 +1,6 @@
 import { MessageType } from "@prisma/client";
 import { prisma } from "../config/database.js";
 
-
 export interface CreateMessageDto {
   content: string;
   type?: MessageType;
@@ -45,15 +44,20 @@ export const messageService = {
 
     // Automatically check for tagged users in metadata to create notifications
     if (data.metadata?.taggedUserIds && Array.isArray(data.metadata.taggedUserIds)) {
-      const senderName = message.sender.intern?.fullName || message.sender.companyAdmin?.fullName || message.sender.email;
-      
+      const senderName =
+        message.sender.intern?.fullName ||
+        message.sender.companyAdmin?.fullName ||
+        message.sender.email;
+
       const notificationPromises = data.metadata.taggedUserIds.map((targetUserId: string) => {
         return prisma.notification.create({
           data: {
             userId: targetUserId,
             type: "MENTION",
             title: `New Team Briefing from ${senderName}`,
-            body: data.metadata.subject ? `[${data.metadata.subject}] ${data.content.slice(0, 100)}` : data.content.slice(0, 150),
+            body: data.metadata.subject
+              ? `[${data.metadata.subject}] ${data.content.slice(0, 100)}`
+              : data.content.slice(0, 150),
             actionUrl: "/intern/chat",
           },
         });
@@ -69,8 +73,8 @@ export const messageService = {
     return message;
   },
 
-  async getMessages(limit = 100, before?: Date) {
-    return prisma.message.findMany({
+  async getMessages(userId: string, limit = 100, before?: Date) {
+    const rawMessages = await prisma.message.findMany({
       where: {
         deletedAt: null,
         ...(before && {
@@ -106,8 +110,37 @@ export const messageService = {
       orderBy: {
         createdAt: "desc",
       },
-      take: limit,
+      take: limit * 5, // fetch more to account for in-memory filtering
     });
+
+    const filteredMessages = rawMessages.filter((msg) => {
+      // Always show messages sent by the user
+      if (msg.senderId === userId) return true;
+
+      let metadata = msg.metadata as any;
+      if (typeof metadata === "string") {
+        try {
+          metadata = JSON.parse(metadata);
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      // If there are no tagged users, it's a public message
+      if (
+        !metadata ||
+        !metadata.taggedUserIds ||
+        !Array.isArray(metadata.taggedUserIds) ||
+        metadata.taggedUserIds.length === 0
+      ) {
+        return true;
+      }
+
+      // If there are tagged users, only show if the current user is tagged
+      return metadata.taggedUserIds.includes(userId);
+    });
+
+    return filteredMessages.slice(0, limit);
   },
 
   async deleteMessage(messageId: string) {

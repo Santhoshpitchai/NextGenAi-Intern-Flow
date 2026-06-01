@@ -5,10 +5,13 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  plugins: [
-    tanstackStart(),
-    react(),
-    tailwindcss(),
-    viteTsConfigPaths(),
-  ],
+  plugins: [tanstackStart(), react(), tailwindcss(), viteTsConfigPaths()],
+  server: {
+    proxy: {
+      "/uploads": {
+        target: "http://localhost:4000",
+        changeOrigin: true,
+      },
+    },
+  },
 });

@@ -51,8 +51,13 @@ function AttendancePage() {
   const todayStr = new Date().toDateString();
   const onLeaveInterns = new Set(
     requests
-      .filter((r) => r.type === "LEAVE" && r.status === "APPROVED" && new Date(r.createdAt).toDateString() === todayStr)
-      .map((r) => r.createdBy.id)
+      .filter(
+        (r) =>
+          r.type === "LEAVE" &&
+          r.status === "APPROVED" &&
+          new Date(r.createdAt).toDateString() === todayStr,
+      )
+      .map((r) => r.createdBy.id),
   );
 
   // Compute attendance stats
@@ -77,7 +82,15 @@ function AttendancePage() {
       ["Attendance Audit Trail", ""],
       ["Generated At", new Date().toLocaleString()],
       ["", ""],
-      ["Intern Name", "Email Address", "Institution", "Check-in Time", "Check-out Time", "Duration", "Status"]
+      [
+        "Intern Name",
+        "Email Address",
+        "Institution",
+        "Check-in Time",
+        "Check-out Time",
+        "Duration",
+        "Status",
+      ],
     ];
 
     filteredInterns.forEach((user) => {
@@ -93,7 +106,7 @@ function AttendancePage() {
         status = record.checkOut ? "Completed" : "In Session";
         checkIn = new Date(record.checkIn).toLocaleTimeString();
         checkOut = record.checkOut ? new Date(record.checkOut).toLocaleTimeString() : "—";
-        
+
         if (record.checkOut) {
           const diffMs = new Date(record.checkOut).getTime() - new Date(record.checkIn).getTime();
           const hrs = Math.floor(diffMs / 3600000);
@@ -111,7 +124,7 @@ function AttendancePage() {
         checkIn,
         checkOut,
         duration,
-        status
+        status,
       ]);
     });
 
@@ -123,7 +136,7 @@ function AttendancePage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `Attendance_Audit_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute("download", `Attendance_Audit_${new Date().toISOString().slice(0, 10)}.csv`);
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
@@ -145,9 +158,24 @@ function AttendancePage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <StatCard icon={Users} label="Total Headcount" value={total.toString()} tone="primary" />
-        <StatCard icon={CheckCircle} label="Active & Present" value={presentCount.toString()} tone="success" />
-        <StatCard icon={Clock} label="Not Logged / Absent" value={absentCount.toString()} tone="warning" />
-        <StatCard icon={AlertCircle} label="Approved Leave" value={leaveCount.toString()} tone="secondary" />
+        <StatCard
+          icon={CheckCircle}
+          label="Active & Present"
+          value={presentCount.toString()}
+          tone="success"
+        />
+        <StatCard
+          icon={Clock}
+          label="Not Logged / Absent"
+          value={absentCount.toString()}
+          tone="warning"
+        />
+        <StatCard
+          icon={AlertCircle}
+          label="Approved Leave"
+          value={leaveCount.toString()}
+          tone="secondary"
+        />
       </div>
 
       <div className="rounded-2xl glass shadow-soft overflow-hidden">
@@ -188,7 +216,7 @@ function AttendancePage() {
                 filteredInterns.map((user) => {
                   const record = todayAttendance.find((r) => r.userId === user.id);
                   const onLeave = onLeaveInterns.has(user.id);
-                  
+
                   let statusLabel = "Not Logged";
                   let dotColor = "bg-muted";
                   let statusStyle = "bg-muted text-muted-foreground border border-border";
@@ -196,32 +224,41 @@ function AttendancePage() {
                   let checkOut = "—";
 
                   if (record) {
-                    checkIn = new Date(record.checkIn).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-                    
+                    checkIn = new Date(record.checkIn).toLocaleTimeString(undefined, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    });
+
                     if (record.checkOut) {
                       statusLabel = "Completed";
                       dotColor = "bg-success";
                       statusStyle = "bg-success/10 text-success border border-success/20";
-                      checkOut = new Date(record.checkOut).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+                      checkOut = new Date(record.checkOut).toLocaleTimeString(undefined, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      });
                     } else {
                       statusLabel = "In Session";
                       dotColor = "bg-primary";
-                      statusStyle = "bg-primary/10 text-primary border border-primary/20 animate-pulse";
+                      statusStyle =
+                        "bg-primary/10 text-primary border border-primary/20 animate-pulse";
                     }
                   } else if (onLeave) {
                     statusLabel = "On Leave";
                     dotColor = "bg-secondary-foreground";
-                    statusStyle = "bg-secondary text-secondary-foreground border border-secondary-foreground/20";
+                    statusStyle =
+                      "bg-secondary text-secondary-foreground border border-secondary-foreground/20";
                   } else {
                     dotColor = "bg-warning";
                     statusStyle = "bg-warning/10 text-warning border border-warning/20";
                   }
 
-                  const initials = user.intern?.fullName
-                    .split(" ")
-                    .map((s) => s[0])
-                    .join("")
-                    .toUpperCase() || "I";
+                  const initials =
+                    user.intern?.fullName
+                      .split(" ")
+                      .map((s) => s[0])
+                      .join("")
+                      .toUpperCase() || "I";
 
                   return (
                     <tr key={user.id} className="hover:bg-muted/30 transition-colors">
@@ -238,12 +275,19 @@ function AttendancePage() {
                       </td>
                       <td className="px-6 py-4 text-sm">
                         <div>{user.intern?.college}</div>
-                        <div className="text-[11px] text-muted-foreground">{user.intern?.specialization}</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {user.intern?.specialization}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-sm font-medium">{checkIn}</td>
                       <td className="px-6 py-4 text-sm font-medium">{checkOut}</td>
                       <td className="px-6 py-4">
-                        <span className={cn("px-2.5 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1.5", statusStyle)}>
+                        <span
+                          className={cn(
+                            "px-2.5 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1.5",
+                            statusStyle,
+                          )}
+                        >
                           <span className={cn("size-1.5 rounded-full", dotColor)} />
                           {statusLabel}
                         </span>

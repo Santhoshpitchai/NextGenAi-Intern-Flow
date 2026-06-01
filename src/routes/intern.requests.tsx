@@ -5,11 +5,24 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus, HelpCircle, Loader2, Clock, CheckCircle, XCircle } from "lucide-react";
 import { requestApi } from "@/services/request-api";
 import { toast } from "sonner";
@@ -94,7 +107,7 @@ function InternRequests() {
         title="Requests"
         subtitle="Submit requests and track their status"
         actions={
-          <Button 
+          <Button
             className="bg-gradient-primary text-primary-foreground"
             onClick={() => setRequestDialog(true)}
           >
@@ -133,16 +146,18 @@ function InternRequests() {
                   </div>
                   <h3 className="text-lg font-semibold mb-2">{request.title}</h3>
                   <p className="text-sm text-muted-foreground mb-3">{request.description}</p>
-                  
+
                   {request.response && (
                     <div className="mt-3 p-3 bg-muted rounded-lg">
-                      <p className="text-xs font-semibold mb-1">Response from {request.reviewedBy?.companyAdmin?.fullName || "Admin"}</p>
+                      <p className="text-xs font-semibold mb-1">
+                        Response from {request.reviewedBy?.companyAdmin?.fullName || "Admin"}
+                      </p>
                       <p className="text-sm">{request.response}</p>
                     </div>
                   )}
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Submitted {new Date(request.createdAt).toLocaleDateString()}</span>
                 {request.reviewedAt && (
@@ -163,7 +178,10 @@ function InternRequests() {
           <div className="space-y-4">
             <div>
               <Label htmlFor="type">Request Type</Label>
-              <Select value={requestData.type} onValueChange={(value) => setRequestData({ ...requestData, type: value as any })}>
+              <Select
+                value={requestData.type}
+                onValueChange={(value) => setRequestData({ ...requestData, type: value as any })}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -200,9 +218,11 @@ function InternRequests() {
             <Button variant="outline" onClick={() => setRequestDialog(false)}>
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleCreateRequest}
-              disabled={!requestData.title || !requestData.description || createRequestMutation.isPending}
+              disabled={
+                !requestData.title || !requestData.description || createRequestMutation.isPending
+              }
             >
               {createRequestMutation.isPending ? (
                 <>

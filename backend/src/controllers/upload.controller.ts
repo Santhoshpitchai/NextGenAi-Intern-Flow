@@ -21,3 +21,15 @@ export const uploadProfilePhoto = asyncHandler(async (req: Request, res: Respons
   const user = await uploadService.uploadProfilePhoto(req.user!.id, req.file);
   sendSuccess(res, 200, "Profile photo uploaded successfully", user);
 });
+
+export const uploadAttachment = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.file) {
+    throw ApiError.badRequest("Attachment file is required");
+  }
+
+  const fileRecord = await uploadService.uploadAttachment(req.user!.id, req.file);
+  sendSuccess(res, 200, "Attachment uploaded successfully", {
+    url: fileRecord.publicUrl,
+    fileId: fileRecord.id,
+  });
+});

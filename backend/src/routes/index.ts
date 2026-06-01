@@ -8,6 +8,7 @@ import requestRoutes from "./request.routes.js";
 import dailyUpdateRoutes from "./daily-update.routes.js";
 import messageRoutes from "./message.routes.js";
 import attendanceRoutes from "./attendance.routes.js";
+import notificationRoutes from "./notification.routes.js";
 
 const router = Router();
 
@@ -28,5 +29,6 @@ router.use("/requests", requestRoutes);
 router.use("/daily-updates", dailyUpdateRoutes);
 router.use("/messages", messageRoutes);
 router.use("/attendance", attendanceRoutes);
+router.use("/notifications", notificationRoutes);
 
 export default router;

@@ -67,12 +67,15 @@ export const taskApi = {
     await apiClient.delete(`/tasks/${id}`);
   },
 
-  async addProgress(taskId: string, data: {
-    percentComplete: number;
-    summary: string;
-    details?: string;
-    blockers?: string;
-  }): Promise<any> {
+  async addProgress(
+    taskId: string,
+    data: {
+      percentComplete: number;
+      summary: string;
+      details?: string;
+      blockers?: string;
+    },
+  ): Promise<any> {
     const res = await apiClient.post(`/tasks/${taskId}/progress`, data);
     return unwrap(res);
   },

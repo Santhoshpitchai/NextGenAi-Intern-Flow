@@ -77,7 +77,7 @@ export async function getTasks(options: {
 }) {
   const { userId, userRole, assignmentId, status, priority } = options;
 
-  let where: any = { deletedAt: null };
+  const where: any = { deletedAt: null };
 
   if (userRole === UserRole.INTERN) {
     where.assigneeId = userId;
@@ -163,7 +163,7 @@ export async function updateTask(
   id: string,
   input: UpdateTaskInput,
   userId: string,
-  userRole: UserRole
+  userRole: UserRole,
 ) {
   const existing = await prisma.task.findFirst({
     where: { id, deletedAt: null },

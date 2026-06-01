@@ -49,7 +49,7 @@ export const requestController = {
       const request = await requestService.updateRequest(
         req.params.id as string,
         reviewerId,
-        req.body
+        req.body,
       );
       res.json(request);
     } catch (error) {

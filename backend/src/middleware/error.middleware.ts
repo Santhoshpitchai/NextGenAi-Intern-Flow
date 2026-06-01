@@ -27,7 +27,9 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
   console.error("[Error]", err);
 
   const message =
-    env.NODE_ENV === "production" ? "Internal server error" : (err as Error)?.message ?? "Unknown error";
+    env.NODE_ENV === "production"
+      ? "Internal server error"
+      : ((err as Error)?.message ?? "Unknown error");
 
   return sendError(res, 500, message);
 }

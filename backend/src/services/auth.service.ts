@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import { FileKind, SessionStatus, UserRole } from "@prisma/client";
 import { prisma } from "../config/database.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -7,21 +8,25 @@ import {
   signRefreshToken,
   verifyRefreshToken,
   getRefreshTokenExpiry,
+  signVerificationToken,
+  verifyVerificationToken,
 } from "../utils/jwt.js";
 import { hashToken } from "../utils/tokenHash.js";
 import { slugify } from "../utils/slug.js";
-import {
-  toPublicUser,
-  userInclude,
-  buildInternBio,
-  type UserWithProfiles,
-} from "./user.mapper.js";
-import type { RegisterAdminInput, RegisterInternInput, LoginInput } from "../validators/auth.validator.js";
+import { toPublicUser, userInclude, buildInternBio, type UserWithProfiles } from "./user.mapper.js";
+import * as emailService from "./email.service.js";
+import type {
+  RegisterAdminInput,
+  RegisterInternInput,
+  LoginInput,
+  ChangePasswordInput,
+} from "../validators/auth.validator.js";
 import type { AuthTokens, PublicUser } from "../types/api.types.js";
 
 export interface AuthResult {
   user: PublicUser;
-  tokens: AuthTokens;
+  tokens?: AuthTokens;
+  requiresVerification?: boolean;
 }
 
 async function uniqueCompanySlug(base: string): Promise<string> {
@@ -34,7 +39,11 @@ async function uniqueCompanySlug(base: string): Promise<string> {
   return slug;
 }
 
-async function createSession(userId: string, refreshTokenId: string, meta?: { ip?: string; userAgent?: string }) {
+async function createSession(
+  userId: string,
+  refreshTokenId: string,
+  meta?: { ip?: string; userAgent?: string },
+) {
   await prisma.session.create({
     data: {
       userId,
@@ -47,7 +56,10 @@ async function createSession(userId: string, refreshTokenId: string, meta?: { ip
   });
 }
 
-async function issueTokens(user: UserWithProfiles, meta?: { ip?: string; userAgent?: string }): Promise<AuthTokens> {
+async function issueTokens(
+  user: UserWithProfiles,
+  meta?: { ip?: string; userAgent?: string },
+): Promise<AuthTokens> {
   const accessToken = signAccessToken({
     id: user.id,
     email: user.email,
@@ -110,8 +122,12 @@ export async function registerCompanyAdmin(input: RegisterAdminInput): Promise<A
     include: userInclude,
   });
 
-  const tokens = await issueTokens(user);
-  return { user: toPublicUser(user), tokens };
+  const verificationToken = signVerificationToken(user.id, user.email);
+  emailService.sendVerificationEmail(user.email, verificationToken).catch((err) => {
+    console.error("Failed to send verification email during admin registration:", err);
+  });
+
+  return { user: toPublicUser(user), requiresVerification: true };
 }
 
 export interface InternRegistrationFiles {
@@ -179,28 +195,35 @@ export async function registerIntern(
 
     const intern = await tx.intern.create({
       data: {
-        userId: createdUser.id,
+        user: { connect: { id: createdUser.id } },
         fullName: input.fullName,
         college: input.college,
         degree: input.degree,
         specialization: input.branch,
         githubUrl: input.githubUrl ?? null,
         linkedinUrl: input.linkedinUrl ?? null,
-        resumeFileId: resumeFile.id,
-        profilePhotoId: photoFile.id,
+        resumeFile: { connect: { id: resumeFile.id } },
+        profilePhoto: { connect: { id: photoFile.id } },
         durationStart: new Date(input.startDate),
-        durationEnd: new Date(input.endDate),
+        durationEnd: input.endDate ? new Date(input.endDate) : null,
         bio: buildInternBio(input.internshipRole),
       },
     });
 
-    const skillNames = input.skills
+    const rawSkills = input.skills
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
 
-    for (const name of skillNames) {
+    const uniqueSkills = new Map<string, string>();
+    for (const name of rawSkills) {
       const slug = slugify(name) || `skill-${Date.now()}`;
+      if (!uniqueSkills.has(slug)) {
+        uniqueSkills.set(slug, name);
+      }
+    }
+
+    for (const [slug, name] of uniqueSkills.entries()) {
       const skill = await tx.skill.upsert({
         where: { slug },
         create: { name, slug },
@@ -217,8 +240,12 @@ export async function registerIntern(
     });
   });
 
-  const tokens = await issueTokens(user);
-  return { user: toPublicUser(user), tokens };
+  const verificationToken = signVerificationToken(user.id, user.email);
+  emailService.sendVerificationEmail(user.email, verificationToken).catch((err) => {
+    console.error("Failed to send verification email during intern registration:", err);
+  });
+
+  return { user: toPublicUser(user), requiresVerification: true };
 }
 
 export async function login(
@@ -240,15 +267,23 @@ export async function login(
     throw ApiError.unauthorized("Invalid email or password");
   }
 
+  if (!user.emailVerifiedAt) {
+    throw ApiError.unauthorized("Your email address is not verified. Please check your inbox for a verification link.");
+  }
+
   // Validate role selection to prevent cross-login bypass
   if (input.role) {
     if (input.role === "ADMIN") {
       if (user.role !== UserRole.COMPANY_ADMIN && user.role !== UserRole.SUPER_ADMIN) {
-        throw ApiError.unauthorized("Access restricted. This account does not have Admin privileges.");
+        throw ApiError.unauthorized(
+          "Access restricted. This account does not have Admin privileges.",
+        );
       }
     } else if (input.role === "INTERN") {
       if (user.role !== UserRole.INTERN) {
-        throw ApiError.unauthorized("Access restricted. This account does not have Intern privileges.");
+        throw ApiError.unauthorized(
+          "Access restricted. This account does not have Intern privileges.",
+        );
       }
     }
   }
@@ -328,4 +363,136 @@ export async function getCurrentUser(userId: string): Promise<PublicUser> {
   }
 
   return toPublicUser(user);
+}
+
+export async function changePassword(userId: string, input: ChangePasswordInput): Promise<void> {
+  const user = await prisma.user.findFirst({
+    where: { id: userId, deletedAt: null },
+  });
+
+  if (!user) {
+    throw ApiError.notFound("User not found");
+  }
+
+  const valid = await comparePassword(input.oldPassword, user.passwordHash);
+  if (!valid) {
+    throw ApiError.badRequest("Incorrect old password");
+  }
+
+  const newPasswordHash = await hashPassword(input.newPassword);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { passwordHash: newPasswordHash },
+  });
+}
+
+export async function forgotPassword(email: string, role?: "INTERN" | "ADMIN"): Promise<void> {
+  const normalizedEmail = email.toLowerCase();
+  const user = await prisma.user.findFirst({
+    where: {
+      email: normalizedEmail,
+      deletedAt: null,
+      ...(role && {
+        role: role === "ADMIN"
+          ? { in: [UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN] }
+          : UserRole.INTERN,
+      }),
+    },
+  });
+
+  if (!user) {
+    // Return silently to prevent email enumeration
+    return;
+  }
+
+  const token = randomBytes(32).toString("hex");
+  const tokenHash = hashToken(token);
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+
+  await prisma.passwordResetToken.create({
+    data: {
+      userId: user.id,
+      tokenHash,
+      expiresAt,
+    },
+  });
+
+  emailService.sendPasswordResetEmail(user.email, token).catch((err) => {
+    console.error("Failed to send password reset email asynchronously:", err);
+  });
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  const tokenHash = hashToken(token);
+
+  const resetToken = await prisma.passwordResetToken.findFirst({
+    where: {
+      tokenHash,
+      usedAt: null,
+      expiresAt: { gt: new Date() },
+    },
+  });
+
+  if (!resetToken) {
+    throw ApiError.badRequest("Invalid or expired password reset token");
+  }
+
+  const newPasswordHash = await hashPassword(newPassword);
+
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: resetToken.userId },
+      data: { passwordHash: newPasswordHash },
+    }),
+    prisma.passwordResetToken.update({
+      where: { id: resetToken.id },
+      data: { usedAt: new Date() },
+    }),
+  ]);
+}
+
+export async function verifyEmail(token: string): Promise<void> {
+  try {
+    const payload = verifyVerificationToken(token);
+    const user = await prisma.user.findFirst({
+      where: { id: payload.sub, email: payload.email, deletedAt: null },
+    });
+
+    if (!user) {
+      throw ApiError.badRequest("Invalid verification token or user not found");
+    }
+
+    if (user.emailVerifiedAt) {
+      return; // Idempotent success
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerifiedAt: new Date() },
+    });
+  } catch (error: any) {
+    if (error instanceof ApiError) throw error;
+    throw ApiError.badRequest("Invalid or expired verification token");
+  }
+}
+
+export async function resendVerificationEmail(email: string): Promise<void> {
+  const normalizedEmail = email.toLowerCase();
+  const user = await prisma.user.findFirst({
+    where: { email: normalizedEmail, deletedAt: null },
+  });
+
+  if (!user) {
+    throw ApiError.notFound("No account found with this email address.");
+  }
+
+  if (user.emailVerifiedAt) {
+    throw ApiError.badRequest("This email is already verified. Please sign in.");
+  }
+
+  const token = signVerificationToken(user.id, user.email);
+  emailService.sendVerificationEmail(user.email, token).catch((err) => {
+    console.error("Failed to resend verification email:", err);
+  });
 }

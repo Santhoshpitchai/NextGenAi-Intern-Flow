@@ -20,12 +20,14 @@ export interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (response: AuthResponse) => void;
+  login: (response: AuthResponse, remember?: boolean) => void;
   logout: () => Promise<void>;
   refetchUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+let isLoggingOutGlobal = false;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
@@ -82,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const response = await authApi.refresh(refreshToken);
           tokenStorage.setTokens(response.tokens.accessToken, response.tokens.refreshToken);
-          
+
           // Get user data with new token
           const userData = await authApi.getMe();
           if (isMounted) {
@@ -123,8 +125,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []); // Only run once on mount
 
   const login = useCallback(
-    (response: AuthResponse) => {
-      tokenStorage.setTokens(response.tokens.accessToken, response.tokens.refreshToken);
+    (response: AuthResponse, remember: boolean = true) => {
+      if (response.tokens) {
+        tokenStorage.setTokens(response.tokens.accessToken, response.tokens.refreshToken, remember);
+      }
       queryClient.setQueryData(authKeys.me, response.user);
       setHasValidToken(true);
     },
@@ -132,13 +136,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    await authApi.logout();
+    isLoggingOutGlobal = true;
+    
+    // Fire and forget server logout to prevent UI blocking
+    authApi.logout().catch(() => {});
+
     tokenStorage.clear();
+    queryClient.clear();
     queryClient.setQueryData(authKeys.me, null);
-    queryClient.removeQueries({ queryKey: authKeys.all });
     setHasValidToken(false);
-    navigate({ to: "/login" });
-    toast.success("Logged out successfully");
+    
+    navigate({ to: "/login" }).catch(() => {});
+    toast.success("Logged out successfully", { id: "logout-success" });
+    
+    setTimeout(() => {
+      isLoggingOutGlobal = false;
+    }, 1000); // Give React time to unmount components
   }, [queryClient, navigate]);
 
   const refetchUser = useCallback(async () => {
@@ -147,10 +160,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const onExpired = () => {
+      if (isLoggingOutGlobal) return;
       tokenStorage.clear();
+      queryClient.clear();
       queryClient.setQueryData(authKeys.me, null);
       setHasValidToken(false);
-      toast.error("Your session has expired. Please sign in again.");
+      toast.error("Your session has expired. Please sign in again.", { id: "session-expired" });
       navigate({ to: "/login" });
     };
     window.addEventListener("auth:session-expired", onExpired);
@@ -184,8 +199,8 @@ export function useAuthLoginRedirect() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  return (response: AuthResponse, message = "Welcome back!") => {
-    login(response);
+  return (response: AuthResponse, remember: boolean = true, message = "Welcome back!") => {
+    login(response, remember);
     toast.success(message);
     navigate({ to: getDashboardPath(response.user.role) });
   };

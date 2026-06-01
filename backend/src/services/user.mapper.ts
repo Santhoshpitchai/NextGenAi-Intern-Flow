@@ -47,7 +47,7 @@ export function toPublicUser(user: UserWithProfiles): PublicUser {
           resumeUrl: user.intern.resumeFile?.publicUrl ?? null,
           profilePhotoUrl: user.intern.profilePhoto?.publicUrl ?? null,
           startDate: user.intern.durationStart.toISOString().slice(0, 10),
-          endDate: user.intern.durationEnd.toISOString().slice(0, 10),
+          endDate: user.intern.durationEnd?.toISOString().slice(0, 10) ?? null,
         }
       : null,
     companyAdminProfile: user.companyAdmin

@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useForm, Controller, type DefaultValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { SignupEmailPending } from "@/components/signup/signup-email-pending";
 import {
   BookOpen,
   Briefcase,
@@ -57,14 +59,15 @@ const defaultValues: DefaultValues<InternSignupFormValues> = {
   githubUrl: "",
   startDate: "",
   endDate: "",
-  resume: null,
-  profilePhoto: null,
+  resume: undefined,
+  profilePhoto: undefined,
   terms: false,
 };
 
 export function InternSignupForm() {
   const registerMutation = useRegisterInternMutation();
   const onAuthSuccess = useAuthLoginRedirect();
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
 
   const {
     register,
@@ -75,7 +78,7 @@ export function InternSignupForm() {
     setError,
     formState: { errors },
   } = useForm<InternSignupFormValues>({
-    resolver: zodResolver(internSignupSchema),
+    resolver: zodResolver(internSignupSchema) as any,
     defaultValues,
     mode: "onBlur",
   });
@@ -84,10 +87,15 @@ export function InternSignupForm() {
 
   const isSubmitting = registerMutation.isPending;
 
-  const onSubmit = async (data: InternSignupFormValues) => {
+  const onSubmit = async (data: any) => {
     try {
       const result = await registerMutation.mutateAsync(data);
-      onAuthSuccess(result, "Welcome to InternFlow AI!");
+      if (result.requiresVerification) {
+        setRegisteredEmail(data.email);
+        toast.success("Account created! Please check your email to verify.");
+      } else {
+        onAuthSuccess(result, true, "Welcome to InternFlow AI!");
+      }
     } catch (err) {
       if (applyApiFieldErrors(err, setError)) {
         toast.error(err.message);
@@ -98,6 +106,14 @@ export function InternSignupForm() {
       }
     }
   };
+
+  if (registeredEmail) {
+    return (
+      <div className="max-w-md mx-auto py-4">
+        <SignupEmailPending email={registeredEmail} />
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
@@ -162,11 +178,7 @@ export function InternSignupForm() {
             name="degree"
             control={control}
             render={({ field }) => (
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isSubmitting}
-              >
+              <Select value={field.value} onValueChange={field.onChange} disabled={isSubmitting}>
                 <SelectTrigger
                   className={cn(
                     "mt-1.5 h-11 bg-background/60",
@@ -187,7 +199,9 @@ export function InternSignupForm() {
             )}
           />
           {errors.degree && (
-            <p className="mt-1.5 text-[0.8rem] font-medium text-destructive">{errors.degree.message}</p>
+            <p className="mt-1.5 text-[0.8rem] font-medium text-destructive">
+              {errors.degree.message}
+            </p>
           )}
         </div>
 
@@ -209,11 +223,7 @@ export function InternSignupForm() {
             name="internshipRole"
             control={control}
             render={({ field }) => (
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isSubmitting}
-              >
+              <Select value={field.value} onValueChange={field.onChange} disabled={isSubmitting}>
                 <SelectTrigger
                   className={cn(
                     "mt-1.5 h-11 bg-background/60",
@@ -320,7 +330,7 @@ export function InternSignupForm() {
             htmlFor="endDate"
             className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
           >
-            End Date
+            End Date (Optional)
           </Label>
           <div className="relative mt-1.5">
             <Calendar className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -328,10 +338,7 @@ export function InternSignupForm() {
               id="endDate"
               type="date"
               disabled={isSubmitting}
-              className={cn(
-                "h-11 bg-background/60 pl-10",
-                errors.endDate && "border-destructive",
-              )}
+              className={cn("h-11 bg-background/60 pl-10", errors.endDate && "border-destructive")}
               {...register("endDate")}
             />
           </div>

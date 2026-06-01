@@ -3,8 +3,19 @@ import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Button } from "@/components/ui/button";
-import { ListChecks, CheckCircle2, TrendingUp, Award, Calendar, Upload, MessageSquare, Loader2, FileDown } from "lucide-react";
+import {
+  ListChecks,
+  CheckCircle2,
+  TrendingUp,
+  Award,
+  Calendar,
+  Upload,
+  MessageSquare,
+  Loader2,
+  FileDown,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { env } from "@/lib/env";
 import { assignmentApi } from "@/services/assignment-api";
 import { taskApi } from "@/services/task-api";
 import { authApi } from "@/services/auth-api";
@@ -25,7 +36,7 @@ const priorityStyle: Record<string, string> = {
 
 function InternDashboard() {
   const navigate = useNavigate();
-  
+
   // Fetch user data
   const { data: user } = useQuery({
     queryKey: ["current-user"],
@@ -54,10 +65,11 @@ function InternDashboard() {
   const activeTasks = tasks?.filter((t) => t.status !== "DONE" && t.status !== "CANCELLED") || [];
   const completedTasks = tasks?.filter((t) => t.status === "DONE") || [];
   const userName = user?.internProfile?.fullName?.split(" ")[0] || "there";
-  
+
   // Calculate completion rate
   const totalTasks = tasks?.length || 0;
-  const completionRate = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
+  const completionRate =
+    totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
 
   // Get upcoming tasks (next 3 with due dates)
   const upcomingTasks = activeTasks
@@ -77,43 +89,43 @@ function InternDashboard() {
 
   return (
     <div>
-      <PageHeader 
-        title={`Welcome, ${userName} 👋`} 
+      <PageHeader
+        title={`Welcome, ${userName} 👋`}
         subtitle={`You have ${activeTasks.length} active tasks and ${assignments?.length || 0} assignments.`}
         actions={
-          <Button 
+          <Button
             className="bg-gradient-primary text-primary-foreground shadow-glow"
             onClick={() => navigate({ to: "/intern/updates" })}
           >
             <Upload className="size-4" /> Submit Daily Update
           </Button>
-        } 
+        }
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard 
-          icon={ListChecks} 
-          label="Active Tasks" 
-          value={activeTasks.length.toString()} 
-          tone="primary" 
+        <StatCard
+          icon={ListChecks}
+          label="Active Tasks"
+          value={activeTasks.length.toString()}
+          tone="primary"
         />
-        <StatCard 
-          icon={CheckCircle2} 
-          label="Completed" 
-          value={completedTasks.length.toString()} 
-          tone="success" 
+        <StatCard
+          icon={CheckCircle2}
+          label="Completed"
+          value={completedTasks.length.toString()}
+          tone="success"
         />
-        <StatCard 
-          icon={TrendingUp} 
-          label="Assignments" 
-          value={assignments?.length.toString() || "0"} 
-          tone="secondary" 
+        <StatCard
+          icon={TrendingUp}
+          label="Assignments"
+          value={assignments?.length.toString() || "0"}
+          tone="secondary"
         />
-        <StatCard 
-          icon={Award} 
-          label="Completion Rate" 
-          value={`${completionRate}%`} 
-          tone="warning" 
+        <StatCard
+          icon={Award}
+          label="Completion Rate"
+          value={`${completionRate}%`}
+          tone="warning"
         />
       </div>
 
@@ -123,11 +135,7 @@ function InternDashboard() {
           <div className="p-6 rounded-2xl glass shadow-soft">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold">My Tasks</h3>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate({ to: "/intern/tasks" })}
-              >
+              <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/intern/tasks" })}>
                 View all
               </Button>
             </div>
@@ -140,23 +148,25 @@ function InternDashboard() {
                 </div>
               ) : (
                 upcomingTasks.map((t) => (
-                  <div 
-                    key={t.id} 
+                  <div
+                    key={t.id}
                     className="p-4 rounded-xl border border-border bg-background hover:border-primary/30 transition-colors cursor-pointer"
                     onClick={() => navigate({ to: "/intern/tasks" })}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className={cn(
-                            "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md", 
-                            priorityStyle[t.priority] || priorityStyle.MEDIUM
-                          )}>
+                          <span
+                            className={cn(
+                              "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md",
+                              priorityStyle[t.priority] || priorityStyle.MEDIUM,
+                            )}
+                          >
                             {t.priority.toLowerCase()}
                           </span>
                           {t.dueDate && (
                             <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Calendar className="size-3" /> 
+                              <Calendar className="size-3" />
                               Due {new Date(t.dueDate).toLocaleDateString()}
                             </span>
                           )}
@@ -182,11 +192,7 @@ function InternDashboard() {
           <div className="p-6 rounded-2xl glass shadow-soft">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold">Recent Activity</h3>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate({ to: "/intern/updates" })}
-              >
+              <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/intern/updates" })}>
                 View all
               </Button>
             </div>
@@ -196,8 +202,8 @@ function InternDashboard() {
                   <Upload className="size-12 mx-auto mb-2 opacity-50" />
                   <p>No updates yet</p>
                   <p className="text-xs mt-1">Submit your first daily update to track progress</p>
-                  <Button 
-                    className="mt-4" 
+                  <Button
+                    className="mt-4"
                     variant="outline"
                     onClick={() => navigate({ to: "/intern/updates" })}
                   >
@@ -206,13 +212,19 @@ function InternDashboard() {
                 </div>
               ) : (
                 recentUpdates.slice(0, 3).map((update) => (
-                  <div key={update.id} className="p-4 rounded-xl border border-border bg-background">
+                  <div
+                    key={update.id}
+                    className="p-4 rounded-xl border border-border bg-background"
+                  >
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-medium text-muted-foreground">
                         {new Date(update.date).toLocaleDateString()}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {new Date(update.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(update.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </span>
                     </div>
                     <h4 className="font-semibold text-sm mb-1">{update.summary}</h4>
@@ -234,29 +246,29 @@ function InternDashboard() {
           <div className="p-6 rounded-2xl glass shadow-soft">
             <h3 className="font-semibold mb-4">Quick Actions</h3>
             <div className="space-y-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full justify-start"
                 onClick={() => navigate({ to: "/intern/tasks" })}
               >
                 <ListChecks className="size-4" /> View All Tasks
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full justify-start"
                 onClick={() => navigate({ to: "/intern/updates" })}
               >
                 <Upload className="size-4" /> Submit Update
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full justify-start"
                 onClick={() => navigate({ to: "/intern/requests" })}
               >
                 <MessageSquare className="size-4" /> Create Request
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full justify-start"
                 onClick={() => navigate({ to: "/intern/calendar" })}
               >
@@ -275,45 +287,87 @@ function InternDashboard() {
             ) : (
               <div className="space-y-3">
                 {assignments.map((assignment) => {
-                  const hasAttachment = assignment.notes?.includes("Attachment: 📄");
-                  const attachmentName = hasAttachment 
-                    ? assignment.notes.split("Attachment: 📄 ")[1] 
+                  const attachmentMatch = assignment.notes?.match(
+                    /\[Attachment: 📄 (.*?)\]\((.*?)\)/,
+                  );
+                  const hasAttachmentUrl = !!attachmentMatch;
+                  const attachmentName = attachmentMatch ? attachmentMatch[1] : null;
+                  let attachmentUrl = attachmentMatch ? attachmentMatch[2] : null;
+
+                  if (attachmentUrl && attachmentUrl.startsWith("/")) {
+                    attachmentUrl = `${env.apiUrl.replace("/api/v1", "")}${attachmentUrl}`;
+                  }
+
+                  const hasOldAttachment =
+                    assignment.notes?.includes("Attachment: 📄 ") && !hasAttachmentUrl;
+                  const oldAttachmentName = hasOldAttachment
+                    ? assignment.notes.split("Attachment: 📄 ")[1]
                     : null;
-                  const displayNotes = hasAttachment 
-                    ? assignment.notes.split("\n\nAttachment: 📄")[0] 
+
+                  const displayNotes = assignment.notes
+                    ? assignment.notes
+                        .replace(/\n\n\[Attachment: 📄 .*?\].*?$/, "")
+                        .replace(/\n\nAttachment: 📄 .*?$/, "")
                     : assignment.notes;
 
                   return (
-                    <div key={assignment.id} className="p-3 rounded-lg border border-border bg-background space-y-2">
+                    <div
+                      key={assignment.id}
+                      className="p-3 rounded-lg border border-border bg-background space-y-2"
+                    >
                       <h4 className="font-semibold text-sm mb-1">{assignment.title}</h4>
-                      <p className="text-xs text-muted-foreground mb-1">{assignment.company.name}</p>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {assignment.company.name}
+                      </p>
                       {displayNotes && (
                         <p className="text-xs text-muted-foreground leading-relaxed">
                           {displayNotes}
                         </p>
                       )}
 
-                      {hasAttachment && (
-                        <div className="p-2 rounded bg-primary/5 border border-primary/10 flex items-center justify-between text-[11px] mb-2">
-                          <span className="font-semibold text-primary truncate max-w-[80%]">📄 {attachmentName}</span>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="size-5 text-primary hover:bg-primary hover:text-primary-foreground"
-                            onClick={() => toast.success(`Downloaded project briefing: ${attachmentName}`)}
-                          >
-                            <FileDown className="size-3" />
-                          </Button>
+                      {(hasAttachmentUrl || hasOldAttachment) && (
+                        <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-between text-sm">
+                          <span className="font-semibold text-primary truncate max-w-[80%]">
+                            📄 {attachmentName || oldAttachmentName}
+                          </span>
+                          <div className="flex gap-2">
+                            {hasAttachmentUrl ? (
+                              <a
+                                href={attachmentUrl!}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary hover:text-primary-foreground hover:bg-primary border border-primary/20 rounded-md transition-all"
+                              >
+                                <FileDown className="size-3.5" />
+                                <span>Read Document</span>
+                              </a>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-xs font-semibold text-primary border-primary/20 hover:bg-primary hover:text-primary-foreground"
+                                onClick={() =>
+                                  toast.success(`Downloaded project briefing: ${oldAttachmentName}`)
+                                }
+                              >
+                                <FileDown className="size-3.5 mr-1.5" />
+                                Read Document
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       )}
-
                       <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40">
-                        <span className={cn(
-                          "px-2 py-0.5 rounded-full font-medium",
-                          assignment.status === "ACTIVE" ? "bg-success/10 text-success" :
-                          assignment.status === "PENDING" ? "bg-warning/10 text-warning" :
-                          "bg-muted text-muted-foreground"
-                        )}>
+                        <span
+                          className={cn(
+                            "px-2 py-0.5 rounded-full font-medium",
+                            assignment.status === "ACTIVE"
+                              ? "bg-success/10 text-success"
+                              : assignment.status === "PENDING"
+                                ? "bg-warning/10 text-warning"
+                                : "bg-muted text-muted-foreground",
+                          )}
+                        >
                           {assignment.status}
                         </span>
                         <span className="text-muted-foreground">
@@ -328,8 +382,8 @@ function InternDashboard() {
           </div>
 
           {/* Team Chat Button */}
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full"
             onClick={() => navigate({ to: "/intern/chat" })}
           >

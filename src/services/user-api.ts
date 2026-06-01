@@ -70,7 +70,7 @@ export interface GetAllUsersResponse {
 const mapProfileFields = (u: any): User => {
   if (!u) return u;
   const mapped = { ...u };
-  
+
   if (u.internProfile && !u.intern) {
     mapped.intern = {
       id: u.internProfile.id,
@@ -88,7 +88,7 @@ const mapProfileFields = (u: any): User => {
         : [],
     };
   }
-  
+
   if (u.companyAdminProfile && !u.companyAdmin) {
     mapped.companyAdmin = {
       id: u.companyAdminProfile.id,
@@ -133,7 +133,7 @@ export const userApi = {
   },
 
   async updateProfile(data: any): Promise<User> {
-    const response = await apiClient.put("/users/profile", data);
+    const response = await apiClient.patch("/users/profile", data);
     return mapProfileFields(response.data.data);
   },
 

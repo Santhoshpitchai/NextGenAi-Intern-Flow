@@ -72,11 +72,12 @@ function InternLayout() {
                   </div>
                   <h2 className="text-2xl font-bold mb-3">Attendance Required</h2>
                   <p className="text-sm text-muted-foreground mb-6">
-                    Please mark your attendance before using the app. Daily attendance logging is required to unlock your workspace metrics, tasks, and assignments.
+                    Please mark your attendance before using the app. Daily attendance logging is
+                    required to unlock your workspace metrics, tasks, and assignments.
                   </p>
-                  
+
                   <div className="w-full space-y-3">
-                    <Button 
+                    <Button
                       onClick={() => checkInMutation.mutate()}
                       disabled={checkInMutation.isPending}
                       className="w-full bg-gradient-primary text-primary-foreground font-bold shadow-glow flex items-center justify-center gap-2 h-11"
@@ -88,9 +89,9 @@ function InternLayout() {
                       )}
                       Log Attendance Now
                     </Button>
-                    
-                    <Button 
-                      variant="outline" 
+
+                    <Button
+                      variant="outline"
                       onClick={() => navigate({ to: "/intern/attendance" })}
                       className="w-full h-11"
                     >

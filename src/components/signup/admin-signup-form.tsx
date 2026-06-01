@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "@tanstack/react-router";
@@ -12,6 +13,7 @@ import { useRegisterAdminMutation } from "@/hooks/api/use-auth-mutations";
 import { useAuthLoginRedirect } from "@/contexts/auth-context";
 import { applyApiFieldErrors } from "@/lib/api/form-errors";
 import { ApiRequestError } from "@/lib/api/errors";
+import { SignupEmailPending } from "@/components/signup/signup-email-pending";
 
 const defaultValues: AdminSignupFormValues = {
   companyName: "",
@@ -26,6 +28,7 @@ const defaultValues: AdminSignupFormValues = {
 export function AdminSignupForm() {
   const registerMutation = useRegisterAdminMutation();
   const onAuthSuccess = useAuthLoginRedirect();
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
 
   const {
     register,
@@ -46,7 +49,12 @@ export function AdminSignupForm() {
   const onSubmit = async (data: AdminSignupFormValues) => {
     try {
       const result = await registerMutation.mutateAsync(data);
-      onAuthSuccess(result, "Company account created successfully!");
+      if (result.requiresVerification) {
+        setRegisteredEmail(data.email);
+        toast.success("Account created! Please check your email to verify.");
+      } else {
+        onAuthSuccess(result, true, "Company account created successfully!");
+      }
     } catch (err) {
       if (applyApiFieldErrors(err, setError)) {
         toast.error(err.message);
@@ -57,6 +65,10 @@ export function AdminSignupForm() {
       }
     }
   };
+
+  if (registeredEmail) {
+    return <SignupEmailPending email={registeredEmail} />;
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="grid gap-5 sm:grid-cols-2" noValidate>

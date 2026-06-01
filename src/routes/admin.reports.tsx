@@ -2,11 +2,27 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Loader2, FileText, Download, Award, Briefcase, Calendar, Mail, User, GraduationCap } from "lucide-react";
+import {
+  Loader2,
+  FileText,
+  Download,
+  Award,
+  Briefcase,
+  Calendar,
+  Mail,
+  User,
+  GraduationCap,
+} from "lucide-react";
 import { userApi } from "@/services/user-api";
 import { assignmentApi } from "@/services/assignment-api";
 import { useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/reports")({
@@ -39,13 +55,16 @@ function ReportsPage() {
 
   // Compute intern-specific statistics
   const getInternStats = (internId: string) => {
-    if (!selectedIntern?.intern) return null;
-    const internAssignments = assignments.filter((a) => a.internId === selectedIntern.intern!.id) || [];
+    if (!selectedIntern?.internProfile) return null;
+    const internAssignments =
+      assignments.filter((a) => a.internId === selectedIntern.internProfile!.id) || [];
     const allTasks = internAssignments.flatMap((a) => a.tasks || []);
     const completedTasks = allTasks.filter((t) => t.status === "DONE");
     const totalTasks = allTasks.length;
-    const completionRate = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
-    const score = totalTasks > 0 ? Math.min(100, Math.round((completedTasks.length / totalTasks) * 100)) : 85;
+    const completionRate =
+      totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
+    const score =
+      totalTasks > 0 ? Math.min(100, Math.round((completedTasks.length / totalTasks) * 100)) : 85;
 
     let grade = "A";
     if (score >= 95) grade = "A+";
@@ -66,7 +85,7 @@ function ReportsPage() {
 
   const handleExportPdf = () => {
     if (!selectedIntern) return;
-    
+
     const reportElement = document.getElementById("report-preview");
     if (!reportElement) {
       toast.error("Report preview element not found!");
@@ -107,7 +126,7 @@ function ReportsPage() {
       console.error("Gathering styles failed, proceeding with print styles", err);
     }
 
-    const internName = selectedIntern.intern?.fullName || "Intern";
+    const internName = selectedIntern.internProfile?.fullName || "Intern";
 
     doc.open();
     doc.write(`
@@ -162,13 +181,13 @@ function ReportsPage() {
   const handleExportCsv = () => {
     if (!selectedIntern) return;
 
-    const internName = selectedIntern.intern?.fullName || "Intern";
-    const specialization = selectedIntern.intern?.specialization || "Unassigned";
-    const college = selectedIntern.intern?.college || "N/A";
-    const degree = selectedIntern.intern?.degree || "N/A";
+    const internName = selectedIntern.internProfile?.fullName || "Intern";
+    const specialization = selectedIntern.internProfile?.branch || "Unassigned";
+    const college = selectedIntern.internProfile?.college || "N/A";
+    const degree = selectedIntern.internProfile?.degree || "N/A";
     const email = selectedIntern.email || "";
-    const startDate = selectedIntern.intern?.durationStart 
-      ? new Date(selectedIntern.intern.durationStart).toLocaleDateString() 
+    const startDate = selectedIntern.internProfile?.startDate
+      ? new Date(selectedIntern.internProfile.startDate).toLocaleDateString()
       : "N/A";
 
     const rows = [
@@ -189,7 +208,7 @@ function ReportsPage() {
       ["Completed Tasks", stats?.completedCount?.toString() || "0"],
       ["Completion Rate", `${stats?.completionRate || 0}%`],
       ["Performance Score", `${stats?.score || 0}%`],
-      ["Grade Level", stats?.grade || "N/A"]
+      ["Grade Level", stats?.grade || "N/A"],
     ];
 
     const csvContent = rows
@@ -235,7 +254,7 @@ function ReportsPage() {
               <SelectContent>
                 {interns.map((i) => (
                   <SelectItem key={i.id} value={i.id}>
-                    {i.intern?.fullName}
+                    {i.internProfile?.fullName}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -244,10 +263,17 @@ function ReportsPage() {
 
           {selectedIntern && (
             <div className="pt-4 border-t border-border space-y-3">
-              <Button onClick={handleExportPdf} className="w-full bg-gradient-primary text-primary-foreground shadow-glow justify-center gap-2">
+              <Button
+                onClick={handleExportPdf}
+                className="w-full bg-gradient-primary text-primary-foreground shadow-glow justify-center gap-2"
+              >
                 <Download className="size-4" /> Download PDF Report
               </Button>
-              <Button onClick={handleExportCsv} variant="outline" className="w-full justify-center gap-2">
+              <Button
+                onClick={handleExportCsv}
+                variant="outline"
+                className="w-full justify-center gap-2"
+              >
                 <FileText className="size-4" /> Export CSV Briefing
               </Button>
             </div>
@@ -255,25 +281,41 @@ function ReportsPage() {
         </div>
 
         {/* Report Preview */}
-        <div id="report-preview" className="lg:col-span-2 p-8 rounded-2xl glass shadow-soft space-y-6">
+        <div
+          id="report-preview"
+          className="lg:col-span-2 p-8 rounded-2xl glass shadow-soft space-y-6"
+        >
           {selectedIntern ? (
             <div className="space-y-6">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-border pb-6 gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="size-16 rounded-full bg-gradient-primary text-primary-foreground text-xl font-bold grid place-items-center">
-                    {selectedIntern.intern?.fullName
-                      .split(" ")
-                      .map((s) => s[0])
-                      .join("")
-                      .toUpperCase() || "I"}
+                  <div className="size-16 rounded-full bg-gradient-primary text-primary-foreground text-xl font-bold flex items-center justify-center overflow-hidden border-2 border-primary/20 shrink-0">
+                    {selectedIntern.internProfile?.profilePhotoUrl ? (
+                      <img
+                        src={selectedIntern.internProfile.profilePhotoUrl}
+                        alt={selectedIntern.internProfile.fullName}
+                        className="size-full object-cover"
+                      />
+                    ) : (
+                      <span>
+                        {selectedIntern.internProfile?.fullName
+                          .split(" ")
+                          .map((s) => s[0])
+                          .join("")
+                          .toUpperCase() || "I"}
+                      </span>
+                    )}
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">{selectedIntern.intern?.fullName}</h2>
-                    <p className="text-sm text-primary font-semibold">{selectedIntern.intern?.specialization || "Unassigned"}</p>
+                    <h2 className="text-2xl font-bold">{selectedIntern.internProfile?.fullName}</h2>
+                    <p className="text-sm text-primary font-semibold">
+                      {selectedIntern.internProfile?.branch || "Unassigned"}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg border border-border">
-                  <Calendar className="size-3.5" /> Start: {new Date(selectedIntern.intern?.durationStart || "").toLocaleDateString()}
+                  <Calendar className="size-3.5" /> Start:{" "}
+                  {new Date(selectedIntern.internProfile?.startDate || "").toLocaleDateString()}
                 </div>
               </div>
 
@@ -283,7 +325,10 @@ function ReportsPage() {
                   <GraduationCap className="size-5 text-primary shrink-0" />
                   <div>
                     <div className="text-xs text-muted-foreground">College & Degree</div>
-                    <div className="font-semibold">{selectedIntern.intern?.college} ({selectedIntern.intern?.degree})</div>
+                    <div className="font-semibold">
+                      {selectedIntern.internProfile?.college} (
+                      {selectedIntern.internProfile?.degree})
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-background/50">
@@ -298,7 +343,9 @@ function ReportsPage() {
               {/* Performance Metrics */}
               {stats && (
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-base border-b border-border pb-2">Program Metrics</h3>
+                  <h3 className="font-semibold text-base border-b border-border pb-2">
+                    Program Metrics
+                  </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="p-4 rounded-xl border border-border bg-background/50 text-center">
                       <Briefcase className="size-5 mx-auto text-primary mb-1" />

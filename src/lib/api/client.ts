@@ -42,7 +42,7 @@ apiClient.interceptors.response.use(
       !original.url?.includes("/auth/logout")
     ) {
       const refreshToken = tokenStorage.getRefreshToken();
-      
+
       // No refresh token available - clear and notify
       if (!refreshToken) {
         tokenStorage.clear();
@@ -69,18 +69,17 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const { data } = await axios.post<ApiSuccess<AuthTokens>>(
-          `${env.apiUrl}/auth/refresh`,
-          { refreshToken },
-        );
+        const { data } = await axios.post<ApiSuccess<AuthTokens>>(`${env.apiUrl}/auth/refresh`, {
+          refreshToken,
+        });
         const { accessToken, refreshToken: newRefresh } = data.data;
-        
+
         // Update tokens
         tokenStorage.setTokens(accessToken, newRefresh);
-        
+
         // Process queued requests
         processQueue(accessToken);
-        
+
         // Retry original request with new token
         original.headers.Authorization = `Bearer ${accessToken}`;
         return apiClient(original);
@@ -109,6 +108,10 @@ apiClient.interceptors.response.use(
   },
 );
 
-export function unwrap<T>(response: { data: ApiSuccess<T> }): T {
-  return response.data.data;
+export function unwrap<T>(response: { data: any }): T {
+  // Handle both wrapped { success, data, message } and raw array/object responses
+  if (response.data && typeof response.data === "object" && "success" in response.data && "data" in response.data) {
+    return response.data.data;
+  }
+  return response.data;
 }

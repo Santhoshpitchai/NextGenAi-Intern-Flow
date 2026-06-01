@@ -14,7 +14,7 @@ export const PERMISSIONS = {
   VIEW_ALL_INTERNS: [UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN],
   CREATE_INTERN_ASSIGNMENT: [UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN],
   DELETE_USERS: [UserRole.SUPER_ADMIN],
-  
+
   // Intern-only features
   VIEW_OWN_PROFILE: [UserRole.INTERN],
   UPDATE_OWN_PROFILE: [UserRole.INTERN],
@@ -24,7 +24,7 @@ export const PERMISSIONS = {
   VIEW_OWN_TASKS: [UserRole.INTERN],
   UPDATE_TASK_PROGRESS: [UserRole.INTERN],
   VIEW_OWN_NOTIFICATIONS: [UserRole.INTERN],
-  
+
   // Shared features
   VIEW_PROFILE: [UserRole.INTERN, UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN],
   VIEW_NOTIFICATIONS: [UserRole.INTERN, UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN],
@@ -42,12 +42,10 @@ export function requirePermission(permission: Permission) {
     }
 
     const allowedRoles = PERMISSIONS[permission];
-    
+
     if (!(allowedRoles as readonly UserRole[]).includes(req.user.role)) {
       return next(
-        ApiError.forbidden(
-          `Access denied. This feature is not available for your role.`
-        )
+        ApiError.forbidden(`Access denied. This feature is not available for your role.`),
       );
     }
 
@@ -66,20 +64,15 @@ export function requireResourceOwnership(resourceUserIdGetter: (req: Request) =>
     }
 
     // Admins can access any resource
-    if (
-      req.user.role === UserRole.COMPANY_ADMIN ||
-      req.user.role === UserRole.SUPER_ADMIN
-    ) {
+    if (req.user.role === UserRole.COMPANY_ADMIN || req.user.role === UserRole.SUPER_ADMIN) {
       return next();
     }
 
     // For interns, check if they own the resource
     const resourceUserId = resourceUserIdGetter(req);
-    
+
     if (req.user.id !== resourceUserId) {
-      return next(
-        ApiError.forbidden("You can only access your own resources")
-      );
+      return next(ApiError.forbidden("You can only access your own resources"));
     }
 
     next();
@@ -102,9 +95,7 @@ export function requireAnyPermission(...permissions: Permission[]) {
 
     if (!hasPermission) {
       return next(
-        ApiError.forbidden(
-          "Access denied. You don't have permission to access this feature."
-        )
+        ApiError.forbidden("Access denied. You don't have permission to access this feature."),
       );
     }
 

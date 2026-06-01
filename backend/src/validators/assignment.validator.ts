@@ -15,8 +15,14 @@ export const updateAssignmentSchema = z.object({
   title: z.string().min(3).max(160).optional(),
   department: z.string().max(120).optional(),
   status: z.nativeEnum(AssignmentStatus).optional(),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  startDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
   managerId: z.string().uuid().nullable().optional(),
   notes: z.string().nullable().optional(),
 });

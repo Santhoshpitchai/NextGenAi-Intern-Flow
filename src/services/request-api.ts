@@ -53,10 +53,7 @@ export const requestApi = {
     return response.data;
   },
 
-  async updateRequest(
-    id: string,
-    data: { status?: string; response?: string }
-  ): Promise<Request> {
+  async updateRequest(id: string, data: { status?: string; response?: string }): Promise<Request> {
     const response = await apiClient.patch(`/requests/${id}`, data);
     return response.data;
   },

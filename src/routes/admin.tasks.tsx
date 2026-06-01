@@ -2,12 +2,34 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, MessageSquare, Plus, MoreHorizontal, Loader2, ArrowRight, CheckCircle, Trash2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Calendar,
+  MessageSquare,
+  Plus,
+  MoreHorizontal,
+  Loader2,
+  ArrowRight,
+  CheckCircle,
+  Trash2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { taskApi } from "@/services/task-api";
 import { assignmentApi } from "@/services/assignment-api";
@@ -20,7 +42,12 @@ export const Route = createFileRoute("/admin/tasks")({
 });
 
 const statusColumns = [
-  { id: "TODO", title: "To Do", tone: "bg-muted-foreground/30", textClass: "text-muted-foreground" },
+  {
+    id: "TODO",
+    title: "To Do",
+    tone: "bg-muted-foreground/30",
+    textClass: "text-muted-foreground",
+  },
   { id: "IN_PROGRESS", title: "In Progress", tone: "bg-primary", textClass: "text-primary" },
   { id: "IN_REVIEW", title: "In Review", tone: "bg-warning", textClass: "text-warning" },
   { id: "DONE", title: "Done", tone: "bg-success", textClass: "text-success" },
@@ -155,7 +182,7 @@ function TasksPage() {
         title="Task Board"
         subtitle="Manage sprint assignments and track task statuses dynamically."
         actions={
-          <Button 
+          <Button
             className="bg-gradient-primary text-primary-foreground shadow-glow"
             onClick={() => setAddTaskDialog(true)}
           >
@@ -163,13 +190,16 @@ function TasksPage() {
           </Button>
         }
       />
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         {statusColumns.map((col) => {
           const colTasks = tasksList.filter((t) => t.status === col.id);
-          
+
           return (
-            <div key={col.id} className="rounded-2xl bg-card/50 border border-border p-4 min-h-[60vh]">
+            <div
+              key={col.id}
+              className="rounded-2xl bg-card/50 border border-border p-4 min-h-[60vh]"
+            >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <span className={cn("size-2 rounded-full", col.tone)} />
@@ -178,9 +208,9 @@ function TasksPage() {
                     {colTasks.length}
                   </span>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="size-7 text-muted-foreground"
                   onClick={() => setAddTaskDialog(true)}
                 >
@@ -196,19 +226,30 @@ function TasksPage() {
                 ) : (
                   colTasks.map((t) => {
                     const initials = t.assignment?.company?.name?.slice(0, 2).toUpperCase() || "IF";
-                    const formattedDue = t.dueDate 
-                      ? new Date(t.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                    const formattedDue = t.dueDate
+                      ? new Date(t.dueDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })
                       : "No limit";
 
                     return (
-                      <div key={t.id} className="p-4 rounded-xl bg-background border border-border shadow-soft hover:shadow-glow hover:border-primary/30 transition-all">
+                      <div
+                        key={t.id}
+                        className="p-4 rounded-xl bg-background border border-border shadow-soft hover:shadow-glow hover:border-primary/30 transition-all"
+                      >
                         <div className="flex items-center justify-between mb-2">
-                          <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md", priorityStyle[t.priority] || priorityStyle.MEDIUM)}>
+                          <span
+                            className={cn(
+                              "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md",
+                              priorityStyle[t.priority] || priorityStyle.MEDIUM,
+                            )}
+                          >
                             {t.priority}
                           </span>
                           <div className="flex items-center gap-1.5">
                             {t.status !== "DONE" && (
-                              <button 
+                              <button
                                 className="text-muted-foreground hover:text-primary transition-colors"
                                 onClick={() => handleNextStatus(t.id, t.status)}
                                 title="Move to next stage"
@@ -217,15 +258,17 @@ function TasksPage() {
                               </button>
                             )}
                             {t.status !== "DONE" && (
-                              <button 
+                              <button
                                 className="text-muted-foreground hover:text-success transition-colors"
-                                onClick={() => updateTaskMutation.mutate({ id: t.id, status: "DONE" })}
+                                onClick={() =>
+                                  updateTaskMutation.mutate({ id: t.id, status: "DONE" })
+                                }
                                 title="Mark Completed"
                               >
                                 <CheckCircle className="size-3.5" />
                               </button>
                             )}
-                            <button 
+                            <button
                               className="text-muted-foreground hover:text-destructive transition-colors"
                               onClick={() => {
                                 if (confirm("Delete this task?")) {
@@ -247,7 +290,7 @@ function TasksPage() {
                             {t.description}
                           </p>
                         )}
-                        
+
                         <div className="text-[11px] text-muted-foreground font-medium mb-3">
                           📁 {t.assignment?.title || "Corporate Sprint"}
                         </div>
@@ -278,12 +321,17 @@ function TasksPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Create Task</DialogTitle>
-            <DialogDescription>Assign a targeted milestone to an intern project sprint.</DialogDescription>
+            <DialogDescription>
+              Assign a targeted milestone to an intern project sprint.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <Label htmlFor="project">Link to Active Project *</Label>
-              <Select value={formData.assignmentId} onValueChange={(val) => setFormData({ ...formData, assignmentId: val })}>
+              <Select
+                value={formData.assignmentId}
+                onValueChange={(val) => setFormData({ ...formData, assignmentId: val })}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select active project sprint..." />
                 </SelectTrigger>
@@ -318,7 +366,10 @@ function TasksPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="priority">Priority</Label>
-                <Select value={formData.priority} onValueChange={(val) => setFormData({ ...formData, priority: val })}>
+                <Select
+                  value={formData.priority}
+                  onValueChange={(val) => setFormData({ ...formData, priority: val })}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -345,7 +396,7 @@ function TasksPage() {
             <Button variant="outline" onClick={() => setAddTaskDialog(false)}>
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleSubmit}
               disabled={createTaskMutation.isPending}
               className="bg-gradient-primary text-primary-foreground shadow-glow"

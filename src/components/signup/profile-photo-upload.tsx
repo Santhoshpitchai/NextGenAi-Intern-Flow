@@ -83,17 +83,15 @@ export function ProfilePhotoUpload({
         </div>
 
         <div className="flex flex-col items-center gap-2 sm:items-start">
-          <Button
+          <button
             type="button"
-            variant="outline"
-            size="sm"
+            className="flex items-center justify-center h-9 px-4 gap-2 rounded-xl bg-gradient-primary text-primary-foreground shadow-glow hover:opacity-90 text-xs font-bold transition-all duration-200 cursor-pointer border-none disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={disabled}
             onClick={() => inputRef.current?.click()}
-            className="gap-2"
           >
             <Upload className="size-4" />
             {previewUrl ? "Change photo" : "Upload photo"}
-          </Button>
+          </button>
           {value && (
             <p className="max-w-[200px] truncate text-xs text-muted-foreground">{value.name}</p>
           )}
@@ -101,7 +99,10 @@ export function ProfilePhotoUpload({
       </div>
 
       {error && (
-        <p className="mt-2 text-center text-[0.8rem] font-medium text-destructive sm:text-left" role="alert">
+        <p
+          className="mt-2 text-center text-[0.8rem] font-medium text-destructive sm:text-left"
+          role="alert"
+        >
           {error}
         </p>
       )}

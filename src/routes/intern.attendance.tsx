@@ -4,8 +4,24 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Loader2, Calendar, Clock, Play, LogOut, CheckCircle, AlertCircle, CalendarDays } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Loader2,
+  Calendar,
+  Clock,
+  Play,
+  LogOut,
+  CheckCircle,
+  AlertCircle,
+  CalendarDays,
+} from "lucide-react";
 import { attendanceApi } from "@/services/attendance-api";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
@@ -127,8 +143,17 @@ function InternAttendance() {
           <div>
             <div className="flex justify-between items-start mb-4">
               <div>
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Today's Session</span>
-                <h3 className="text-xl font-bold mt-0.5">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+                  Today's Session
+                </span>
+                <h3 className="text-xl font-bold mt-0.5">
+                  {new Date().toLocaleDateString(undefined, {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </h3>
               </div>
               <Badge className={statusColor}>{statusText}</Badge>
             </div>
@@ -136,7 +161,9 @@ function InternAttendance() {
             {/* Render conditional views based on status */}
             {!activeRecord && (
               <div className="py-4">
-                <p className="text-sm text-muted-foreground">You haven't checked in yet. Log your attendance to start your work session.</p>
+                <p className="text-sm text-muted-foreground">
+                  You haven't checked in yet. Log your attendance to start your work session.
+                </p>
               </div>
             )}
 
@@ -145,7 +172,10 @@ function InternAttendance() {
                 <div className="p-4 rounded-xl border border-border bg-background/40">
                   <div className="text-xs text-muted-foreground">Checked In At</div>
                   <div className="text-lg font-bold mt-1 text-primary">
-                    {new Date(activeRecord.checkIn).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(activeRecord.checkIn).toLocaleTimeString(undefined, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </div>
                 </div>
                 <div className="p-4 rounded-xl border border-border bg-background/40">
@@ -162,13 +192,19 @@ function InternAttendance() {
                 <div className="p-4 rounded-xl border border-border bg-background/40">
                   <div className="text-xs text-muted-foreground">Checked In</div>
                   <div className="text-sm font-bold mt-1">
-                    {new Date(activeRecord.checkIn).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(activeRecord.checkIn).toLocaleTimeString(undefined, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </div>
                 </div>
                 <div className="p-4 rounded-xl border border-border bg-background/40">
                   <div className="text-xs text-muted-foreground">Checked Out</div>
                   <div className="text-sm font-bold mt-1">
-                    {new Date(activeRecord.checkOut).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(activeRecord.checkOut).toLocaleTimeString(undefined, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </div>
                 </div>
                 <div className="p-4 rounded-xl border border-border bg-background/40">
@@ -245,7 +281,10 @@ function InternAttendance() {
           </div>
           <div className="p-3 bg-primary/10 text-xs text-primary rounded-xl border border-primary/20 flex gap-2.5 items-start mt-4">
             <AlertCircle className="size-4 shrink-0 mt-0.5" />
-            <span>Check-in integrity is active. Closing the browser window or network interruptions will not terminate your session automatically. Close your shift manually above.</span>
+            <span>
+              Check-in integrity is active. Closing the browser window or network interruptions will
+              not terminate your session automatically. Close your shift manually above.
+            </span>
           </div>
         </Card>
       </div>
@@ -279,18 +318,32 @@ function InternAttendance() {
                 </tr>
               ) : (
                 records.map((record) => {
-                  const checkInTime = new Date(record.checkIn).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-                  const checkOutTime = record.checkOut 
-                    ? new Date(record.checkOut).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+                  const checkInTime = new Date(record.checkIn).toLocaleTimeString(undefined, {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+                  const checkOutTime = record.checkOut
+                    ? new Date(record.checkOut).toLocaleTimeString(undefined, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
                     : "—";
-                  
+
                   const isToday = new Date(record.date).toDateString() === todayStr;
 
                   return (
                     <tr key={record.id} className="hover:bg-muted/30 transition-colors">
                       <td className="px-6 py-4 font-semibold text-sm">
-                        {new Date(record.date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-                        {isToday && <span className="ml-2.5 text-[10px] font-extrabold uppercase bg-primary/20 text-primary px-2 py-0.5 rounded-full">Today</span>}
+                        {new Date(record.date).toLocaleDateString(undefined, {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                        {isToday && (
+                          <span className="ml-2.5 text-[10px] font-extrabold uppercase bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                            Today
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-sm font-medium">{checkInTime}</td>
                       <td className="px-6 py-4 text-sm font-medium">{checkOutTime}</td>
@@ -299,9 +352,13 @@ function InternAttendance() {
                       </td>
                       <td className="px-6 py-4">
                         {record.checkOut ? (
-                          <Badge className="bg-success/10 text-success border border-success/20">Present</Badge>
+                          <Badge className="bg-success/10 text-success border border-success/20">
+                            Present
+                          </Badge>
                         ) : (
-                          <Badge className="bg-warning/10 text-warning border border-warning/20 animate-pulse">In Session</Badge>
+                          <Badge className="bg-warning/10 text-warning border border-warning/20 animate-pulse">
+                            In Session
+                          </Badge>
                         )}
                       </td>
                     </tr>
@@ -319,14 +376,15 @@ function InternAttendance() {
           <DialogHeader>
             <DialogTitle>Shall we close the attendance?</DialogTitle>
             <DialogDescription>
-              This will officially close your daily shift and record your check-out time. You will not be able to log another check-in for today.
+              This will officially close your daily shift and record your check-out time. You will
+              not be able to log another check-in for today.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4 gap-2">
             <Button variant="outline" onClick={() => setCheckoutModalOpen(false)}>
               Cancel
             </Button>
-            <Button 
+            <Button
               variant="destructive"
               onClick={handleConfirmCheckout}
               disabled={checkOutMutation.isPending}

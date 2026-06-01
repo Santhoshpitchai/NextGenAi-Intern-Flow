@@ -19,7 +19,11 @@ const requireRole = (roles: UserRole[]) => {
 
 router.post("/", dailyUpdateController.createUpdate);
 router.get("/my", dailyUpdateController.getMyUpdates);
-router.get("/all", requireRole([UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN]), dailyUpdateController.getAllUpdates);
+router.get(
+  "/all",
+  requireRole([UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN]),
+  dailyUpdateController.getAllUpdates,
+);
 router.get("/:id", dailyUpdateController.getUpdateById);
 router.delete("/:id", dailyUpdateController.deleteUpdate);
 

@@ -9,14 +9,38 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Briefcase, CheckCircle2, MessageSquare, Send, Loader2, Megaphone, Users, User, Shield, Check } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Briefcase,
+  CheckCircle2,
+  MessageSquare,
+  Send,
+  Loader2,
+  Megaphone,
+  Users,
+  User,
+  Shield,
+  Check,
+} from "lucide-react";
 import { messageApi } from "@/services/message-api";
 import { userApi } from "@/services/user-api";
 import { useAuth } from "@/contexts/auth-context";
 import { assignmentApi } from "@/services/assignment-api";
 import { taskApi } from "@/services/task-api";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/chat")({
@@ -60,7 +84,9 @@ function AdminChat() {
     queryFn: () => taskApi.getAllTasks(),
   });
 
-  const filteredTasks = allTasks ? allTasks.filter((t) => t.assignment?.id === selectedAssignmentId) : [];
+  const filteredTasks = allTasks
+    ? allTasks.filter((t) => t.assignment?.id === selectedAssignmentId)
+    : [];
 
   const sendMessageMutation = useMutation({
     mutationFn: messageApi.createMessage,
@@ -81,7 +107,7 @@ function AdminChat() {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageText.trim()) return;
-    
+
     sendMessageMutation.mutate({
       content: messageText,
       type: "TEXT",
@@ -95,9 +121,12 @@ function AdminChat() {
     }
 
     const selectedUsers = users.filter((u) => selectedUserIds.includes(u.id));
-    const selectedNames = selectedUsers.map((u) => u.intern?.fullName || u.companyAdmin?.fullName || u.email);
+    const selectedNames = selectedUsers.map(
+      (u) => u.intern?.fullName || u.companyAdmin?.fullName || u.email,
+    );
 
-    const actualAssignmentId = selectedAssignmentId && selectedAssignmentId !== "none" ? selectedAssignmentId : undefined;
+    const actualAssignmentId =
+      selectedAssignmentId && selectedAssignmentId !== "none" ? selectedAssignmentId : undefined;
     const actualTaskId = selectedTaskId && selectedTaskId !== "none" ? selectedTaskId : undefined;
 
     const selectedAssignment = assignments?.find((a) => a.id === actualAssignmentId);
@@ -132,7 +161,7 @@ function AdminChat() {
 
   const toggleSelectUser = (id: string) => {
     setSelectedUserIds((prev) =>
-      prev.includes(id) ? prev.filter((uid) => uid !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((uid) => uid !== id) : [...prev, id],
     );
   };
 
@@ -189,105 +218,138 @@ function AdminChat() {
               </div>
             ) : (
               <>
-                {messages.slice().reverse().map((message) => {
-                  const isOwnMessage = message.sender.id === user?.id;
-                  const displayName = getDisplayName(message);
-                  const isBriefing = message.metadata?.subject;
+                {messages
+                  .slice()
+                  .reverse()
+                  .map((message) => {
+                    const isOwnMessage = message.sender.id === user?.id;
+                    const displayName = getDisplayName(message);
+                    const isBriefing = message.metadata?.subject;
 
-                  return (
-                    <div
-                      key={message.id}
-                      className={`flex gap-3.5 ${isOwnMessage ? "flex-row-reverse" : ""}`}
-                    >
-                      <Avatar className="size-9 border border-border shadow-soft shrink-0">
-                        <AvatarFallback className="bg-gradient-primary text-primary-foreground text-xs font-bold">
-                          {getInitials(displayName)}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className={`flex flex-col max-w-[70%] ${isOwnMessage ? "items-end" : ""}`}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-bold text-foreground/90">{displayName}</span>
-                          {message.sender.role.includes("ADMIN") && (
-                            <Badge variant="secondary" className="text-[8px] bg-primary/10 text-primary font-extrabold px-1.5 py-0.25">
-                              Admin
-                            </Badge>
-                          )}
-                          <span className="text-[10px] text-muted-foreground">
-                            {new Date(message.createdAt).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                        </div>
-                        
-                        {isBriefing ? (
-                          /* Briefing Card Announcement Rendering */
-                          <div className="rounded-2xl border border-primary/20 bg-background/80 shadow-medium overflow-hidden w-full max-w-lg text-left">
-                            <div className="bg-gradient-primary px-4 py-2.5 flex items-center gap-2 text-primary-foreground">
-                              <Megaphone className="size-4 shrink-0" />
-                              <span className="text-xs font-extrabold uppercase tracking-widest">Team Announcement</span>
-                            </div>
-                            <div className="p-4 space-y-3">
-                              <div>
-                                <h4 className="font-extrabold text-base text-foreground leading-tight">{message.metadata.subject}</h4>
-                                <div className="flex flex-wrap gap-1 mt-2 items-center">
-                                  <span className="text-[10px] text-muted-foreground font-semibold uppercase mr-1">To:</span>
-                                  {message.metadata.taggedUserNames?.map((name: string, i: number) => (
-                                    <Badge key={i} variant="secondary" className="text-[9px] font-bold px-2 py-0.5">
-                                      @{name}
-                                    </Badge>
-                                  ))}
-                                </div>
+                    return (
+                      <div
+                        key={message.id}
+                        className={`flex gap-3.5 ${isOwnMessage ? "flex-row-reverse" : ""}`}
+                      >
+                        <Avatar className="size-9 border border-border shadow-soft shrink-0">
+                          <AvatarImage
+                            src={message.sender.intern?.profilePhoto?.publicUrl}
+                            className="object-cover"
+                          />
+                          <AvatarFallback className="bg-gradient-primary text-primary-foreground text-xs font-bold">
+                            {getInitials(displayName)}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div
+                          className={`flex flex-col max-w-[70%] ${isOwnMessage ? "items-end" : ""}`}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-bold text-foreground/90">
+                              {displayName}
+                            </span>
+                            {message.sender.role.includes("ADMIN") && (
+                              <Badge
+                                variant="secondary"
+                                className="text-[8px] bg-primary/10 text-primary font-extrabold px-1.5 py-0.25"
+                              >
+                                Admin
+                              </Badge>
+                            )}
+                            <span className="text-[10px] text-muted-foreground">
+                              {new Date(message.createdAt).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          </div>
+
+                          {isBriefing ? (
+                            /* Briefing Card Announcement Rendering */
+                            <div className="rounded-2xl border border-primary/20 bg-background/80 shadow-medium overflow-hidden w-full max-w-lg text-left">
+                              <div className="bg-gradient-primary px-4 py-2.5 flex items-center gap-2 text-primary-foreground">
+                                <Megaphone className="size-4 shrink-0" />
+                                <span className="text-xs font-extrabold uppercase tracking-widest">
+                                  Team Announcement
+                                </span>
                               </div>
-
-                              {/* Linked deliverable chips */}
-                              {(message.metadata.assignmentTitle || message.metadata.taskTitle) && (
-                                <div className="flex flex-col gap-2 p-2.5 rounded-xl bg-muted/50 border border-border/40 text-xs">
-                                  {message.metadata.assignmentTitle && (
-                                    <Link
-                                      to="/admin/projects"
-                                      className="flex items-center gap-2 text-foreground/90 font-medium hover:underline hover:text-primary transition-colors cursor-pointer"
-                                    >
-                                      <Briefcase className="size-3.5 text-primary shrink-0" />
-                                      <span>Linked Project:</span>
-                                      <span className="font-bold text-primary truncate max-w-[240px]">{message.metadata.assignmentTitle}</span>
-                                    </Link>
-                                  )}
-                                  {message.metadata.taskTitle && (
-                                    <Link
-                                      to="/admin/tasks"
-                                      className="flex items-center gap-2 text-foreground/90 font-medium hover:underline hover:text-green-600 transition-colors cursor-pointer"
-                                    >
-                                      <CheckCircle2 className="size-3.5 text-green-500 shrink-0" />
-                                      <span>Linked Task:</span>
-                                      <span className="font-bold text-green-600 dark:text-green-400 truncate max-w-[240px]">{message.metadata.taskTitle}</span>
-                                    </Link>
-                                  )}
+                              <div className="p-4 space-y-3">
+                                <div>
+                                  <h4 className="font-extrabold text-base text-foreground leading-tight">
+                                    {message.metadata.subject}
+                                  </h4>
+                                  <div className="flex flex-wrap gap-1 mt-2 items-center">
+                                    <span className="text-[10px] text-muted-foreground font-semibold uppercase mr-1">
+                                      To:
+                                    </span>
+                                    {message.metadata.taggedUserNames?.map(
+                                      (name: string, i: number) => (
+                                        <Badge
+                                          key={i}
+                                          variant="secondary"
+                                          className="text-[9px] font-bold px-2 py-0.5"
+                                        >
+                                          @{name}
+                                        </Badge>
+                                      ),
+                                    )}
+                                  </div>
                                 </div>
-                              )}
 
-                              <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap pt-1 border-t border-border/60">
+                                {/* Linked deliverable chips */}
+                                {(message.metadata.assignmentTitle ||
+                                  message.metadata.taskTitle) && (
+                                  <div className="flex flex-col gap-2 p-2.5 rounded-xl bg-muted/50 border border-border/40 text-xs">
+                                    {message.metadata.assignmentTitle && (
+                                      <Link
+                                        to="/admin/projects"
+                                        className="flex items-center gap-2 text-foreground/90 font-medium hover:underline hover:text-primary transition-colors cursor-pointer"
+                                      >
+                                        <Briefcase className="size-3.5 text-primary shrink-0" />
+                                        <span>Linked Project:</span>
+                                        <span className="font-bold text-primary truncate max-w-[240px]">
+                                          {message.metadata.assignmentTitle}
+                                        </span>
+                                      </Link>
+                                    )}
+                                    {message.metadata.taskTitle && (
+                                      <Link
+                                        to="/admin/tasks"
+                                        className="flex items-center gap-2 text-foreground/90 font-medium hover:underline hover:text-green-600 transition-colors cursor-pointer"
+                                      >
+                                        <CheckCircle2 className="size-3.5 text-green-500 shrink-0" />
+                                        <span>Linked Task:</span>
+                                        <span className="font-bold text-green-600 dark:text-green-400 truncate max-w-[240px]">
+                                          {message.metadata.taskTitle}
+                                        </span>
+                                      </Link>
+                                    )}
+                                  </div>
+                                )}
+
+                                <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap pt-1 border-t border-border/60">
+                                  {message.content}
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            /* Standard Text Bubble Rendering */
+                            <div
+                              className={`rounded-2xl px-4 py-2.5 shadow-soft ${
+                                isOwnMessage
+                                  ? "bg-primary text-primary-foreground rounded-tr-none font-medium"
+                                  : "bg-muted rounded-tl-none text-foreground"
+                              }`}
+                            >
+                              <p className="text-sm whitespace-pre-wrap leading-relaxed">
                                 {message.content}
                               </p>
                             </div>
-                          </div>
-                        ) : (
-                          /* Standard Text Bubble Rendering */
-                          <div
-                            className={`rounded-2xl px-4 py-2.5 shadow-soft ${
-                              isOwnMessage
-                                ? "bg-primary text-primary-foreground rounded-tr-none font-medium"
-                                : "bg-muted rounded-tl-none text-foreground"
-                            }`}
-                          >
-                            <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
                 <div ref={messagesEndRef} />
               </>
             )}
@@ -337,15 +399,20 @@ function AdminChat() {
                     {admins.map((admin) => {
                       const isSelected = selectedUserIds.includes(admin.id);
                       const name = admin.companyAdmin?.fullName || admin.email;
-                      
+                      const isCurrentUser = admin.id === user?.id;
+
                       return (
                         <div
                           key={admin.id}
-                          onClick={() => toggleSelectUser(admin.id)}
-                          className={`flex items-center justify-between p-2 rounded-xl border border-transparent transition-all cursor-pointer ${
-                            isSelected 
-                              ? "bg-primary/5 border-primary/20" 
-                              : "hover:bg-muted/40"
+                          onClick={() => !isCurrentUser && toggleSelectUser(admin.id)}
+                          className={`flex items-center justify-between p-2 rounded-xl border border-transparent transition-all ${
+                            isCurrentUser ? "opacity-70 cursor-default" : "cursor-pointer"
+                          } ${
+                            isSelected
+                              ? "bg-primary/5 border-primary/20"
+                              : !isCurrentUser
+                                ? "hover:bg-muted/40"
+                                : ""
                           }`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
@@ -355,16 +422,31 @@ function AdminChat() {
                               </AvatarFallback>
                             </Avatar>
                             <div className="min-w-0">
-                              <div className="text-xs font-bold truncate leading-tight">{name}</div>
-                              <div className="text-[9px] text-muted-foreground truncate">{admin.companyAdmin?.department || "HR Department"}</div>
+                              <div className="text-xs font-bold truncate leading-tight flex items-center gap-1">
+                                {name}
+                                {isCurrentUser && (
+                                  <span className="text-[9px] text-primary bg-primary/10 px-1 py-0.5 rounded font-bold">
+                                    (You)
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[9px] text-muted-foreground truncate">
+                                {admin.companyAdmin?.department || "HR Department"}
+                              </div>
                             </div>
                           </div>
 
-                          <div className={`size-4.5 rounded border flex items-center justify-center transition-colors shrink-0 ${
-                            isSelected ? "bg-primary border-primary text-primary-foreground" : "border-border"
-                          }`}>
-                            {isSelected && <Check className="size-3 stroke-[3]" />}
-                          </div>
+                          {!isCurrentUser && (
+                            <div
+                              className={`size-4.5 rounded border flex items-center justify-center transition-colors shrink-0 ${
+                                isSelected
+                                  ? "bg-primary border-primary text-primary-foreground"
+                                  : "border-border"
+                              }`}
+                            >
+                              {isSelected && <Check className="size-3 stroke-[3]" />}
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -382,34 +464,58 @@ function AdminChat() {
                     {interns.map((intern) => {
                       const isSelected = selectedUserIds.includes(intern.id);
                       const name = intern.intern?.fullName || intern.email;
+                      const isCurrentUser = intern.id === user?.id;
 
                       return (
                         <div
                           key={intern.id}
-                          onClick={() => toggleSelectUser(intern.id)}
-                          className={`flex items-center justify-between p-2 rounded-xl border border-transparent transition-all cursor-pointer ${
-                            isSelected 
-                              ? "bg-primary/5 border-primary/20" 
-                              : "hover:bg-muted/40"
+                          onClick={() => !isCurrentUser && toggleSelectUser(intern.id)}
+                          className={`flex items-center justify-between p-2 rounded-xl border border-transparent transition-all ${
+                            isCurrentUser ? "opacity-70 cursor-default" : "cursor-pointer"
+                          } ${
+                            isSelected
+                              ? "bg-primary/5 border-primary/20"
+                              : !isCurrentUser
+                                ? "hover:bg-muted/40"
+                                : ""
                           }`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             <Avatar className="size-7 shadow-soft">
+                              <AvatarImage
+                                src={intern.intern?.profilePhoto?.publicUrl}
+                                className="object-cover"
+                              />
                               <AvatarFallback className="bg-gradient-primary text-primary-foreground text-[10px] font-bold">
                                 {getInitials(name)}
                               </AvatarFallback>
                             </Avatar>
                             <div className="min-w-0">
-                              <div className="text-xs font-bold truncate leading-tight">{name}</div>
-                              <div className="text-[9px] text-muted-foreground truncate">{intern.intern?.specialization || "Engineering"}</div>
+                              <div className="text-xs font-bold truncate leading-tight flex items-center gap-1">
+                                {name}
+                                {isCurrentUser && (
+                                  <span className="text-[9px] text-primary bg-primary/10 px-1 py-0.5 rounded font-bold">
+                                    (You)
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[9px] text-muted-foreground truncate">
+                                {intern.intern?.specialization || "Engineering"}
+                              </div>
                             </div>
                           </div>
 
-                          <div className={`size-4.5 rounded border flex items-center justify-center transition-colors shrink-0 ${
-                            isSelected ? "bg-primary border-primary text-primary-foreground" : "border-border"
-                          }`}>
-                            {isSelected && <Check className="size-3 stroke-[3]" />}
-                          </div>
+                          {!isCurrentUser && (
+                            <div
+                              className={`size-4.5 rounded border flex items-center justify-center transition-colors shrink-0 ${
+                                isSelected
+                                  ? "bg-primary border-primary text-primary-foreground"
+                                  : "border-border"
+                              }`}
+                            >
+                              {isSelected && <Check className="size-3 stroke-[3]" />}
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -423,7 +529,9 @@ function AdminChat() {
           {selectedUserIds.length > 0 && (
             <div className="pt-4 border-t border-border mt-3">
               <div className="bg-primary/5 p-3 rounded-xl border border-primary/10 mb-3 text-center">
-                <span className="text-xs font-bold text-primary">{selectedUserIds.length} Recipients Selected</span>
+                <span className="text-xs font-bold text-primary">
+                  {selectedUserIds.length} Recipients Selected
+                </span>
               </div>
               <Button
                 onClick={() => setDraftModalOpen(true)}
@@ -445,7 +553,8 @@ function AdminChat() {
               <Megaphone className="size-5 text-primary" /> Draft Team Briefing
             </DialogTitle>
             <DialogDescription>
-              Compose a formatted administrative announcement. Tagged workspace accounts will receive a notification loop binder.
+              Compose a formatted administrative announcement. Tagged workspace accounts will
+              receive a notification loop binder.
             </DialogDescription>
           </DialogHeader>
 
@@ -455,7 +564,10 @@ function AdminChat() {
               <Label className="text-xs font-bold text-muted-foreground">Recipients</Label>
               <div className="flex flex-wrap gap-1 mt-1.5 p-2 rounded-xl border border-border bg-muted/40 max-h-24 overflow-y-auto">
                 {getSelectedNames().map((name, i) => (
-                  <Badge key={i} className="text-[10px] font-bold bg-primary text-primary-foreground">
+                  <Badge
+                    key={i}
+                    className="text-[10px] font-bold bg-primary text-primary-foreground"
+                  >
                     @{name}
                   </Badge>
                 ))}
@@ -464,7 +576,9 @@ function AdminChat() {
 
             {/* Subject */}
             <div>
-              <Label htmlFor="subject" className="text-xs font-bold">Briefing Subject *</Label>
+              <Label htmlFor="subject" className="text-xs font-bold">
+                Briefing Subject *
+              </Label>
               <Input
                 id="subject"
                 value={draftData.subject}
@@ -477,11 +591,16 @@ function AdminChat() {
             {/* Optional Project & Task binders */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="project" className="text-xs font-bold text-muted-foreground">Link to Project (Optional)</Label>
-                <Select value={selectedAssignmentId} onValueChange={(val) => {
-                  setSelectedAssignmentId(val);
-                  setSelectedTaskId("");
-                }}>
+                <Label htmlFor="project" className="text-xs font-bold text-muted-foreground">
+                  Link to Project (Optional)
+                </Label>
+                <Select
+                  value={selectedAssignmentId}
+                  onValueChange={(val) => {
+                    setSelectedAssignmentId(val);
+                    setSelectedTaskId("");
+                  }}
+                >
                   <SelectTrigger className="mt-1.5 h-10 bg-background/60">
                     <SelectValue placeholder="Select Project..." />
                   </SelectTrigger>
@@ -497,14 +616,22 @@ function AdminChat() {
               </div>
 
               <div>
-                <Label htmlFor="task" className="text-xs font-bold text-muted-foreground">Link to Task (Optional)</Label>
+                <Label htmlFor="task" className="text-xs font-bold text-muted-foreground">
+                  Link to Task (Optional)
+                </Label>
                 <Select
                   value={selectedTaskId}
                   onValueChange={setSelectedTaskId}
                   disabled={!selectedAssignmentId || selectedAssignmentId === "none"}
                 >
                   <SelectTrigger className="mt-1.5 h-10 bg-background/60">
-                    <SelectValue placeholder={!selectedAssignmentId || selectedAssignmentId === "none" ? "Select Project First..." : "Select Task..."} />
+                    <SelectValue
+                      placeholder={
+                        !selectedAssignmentId || selectedAssignmentId === "none"
+                          ? "Select Project First..."
+                          : "Select Task..."
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Task</SelectItem>
@@ -520,7 +647,9 @@ function AdminChat() {
 
             {/* Message Body */}
             <div>
-              <Label htmlFor="body" className="text-xs font-bold">Message Content *</Label>
+              <Label htmlFor="body" className="text-xs font-bold">
+                Message Content *
+              </Label>
               <Textarea
                 id="body"
                 value={draftData.body}
@@ -538,7 +667,9 @@ function AdminChat() {
             </Button>
             <Button
               onClick={handleSendDraft}
-              disabled={!draftData.subject.trim() || !draftData.body.trim() || sendMessageMutation.isPending}
+              disabled={
+                !draftData.subject.trim() || !draftData.body.trim() || sendMessageMutation.isPending
+              }
               className="bg-gradient-primary text-primary-foreground font-bold shadow-glow flex items-center justify-center gap-1.5"
             >
               {sendMessageMutation.isPending ? (

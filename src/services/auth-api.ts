@@ -9,6 +9,12 @@ export interface LoginPayload {
   role?: "INTERN" | "ADMIN";
 }
 
+export interface ChangePasswordPayload {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 function buildInternFormData(data: InternSignupFormValues): FormData {
   const form = new FormData();
   form.append("fullName", data.fullName);
@@ -24,7 +30,7 @@ function buildInternFormData(data: InternSignupFormValues): FormData {
   if (data.linkedinUrl) form.append("linkedinUrl", data.linkedinUrl);
   if (data.githubUrl) form.append("githubUrl", data.githubUrl);
   form.append("startDate", data.startDate);
-  form.append("endDate", data.endDate);
+  if (data.endDate) form.append("endDate", data.endDate);
   form.append("terms", String(data.terms));
   form.append("resume", data.resume);
   form.append("profilePhoto", data.profilePhoto);
@@ -67,15 +73,45 @@ export const authApi = {
     }
   },
 
-  async refresh(refreshToken: string): Promise<{ tokens: { accessToken: string; refreshToken: string } }> {
-    const res = await apiClient.post<ApiSuccess<{ accessToken: string; refreshToken: string }>>("/auth/refresh", {
-      refreshToken,
-    });
+  async refresh(
+    refreshToken: string,
+  ): Promise<{ tokens: { accessToken: string; refreshToken: string } }> {
+    const res = await apiClient.post<ApiSuccess<{ accessToken: string; refreshToken: string }>>(
+      "/auth/refresh",
+      {
+        refreshToken,
+      },
+    );
     return { tokens: unwrap(res) };
   },
 
   async getMe(): Promise<User> {
     const res = await apiClient.get<ApiSuccess<User>>("/auth/me");
+    return unwrap(res);
+  },
+
+  async changePassword(payload: ChangePasswordPayload): Promise<void> {
+    const res = await apiClient.post<ApiSuccess<null>>("/auth/change-password", payload);
+    return unwrap(res);
+  },
+
+  async forgotPassword(email: string, role?: "INTERN" | "ADMIN"): Promise<void> {
+    const res = await apiClient.post<ApiSuccess<null>>("/auth/forgot-password", { email, role });
+    return unwrap(res);
+  },
+
+  async resetPassword(payload: { token: string; newPassword: string }): Promise<void> {
+    const res = await apiClient.post<ApiSuccess<null>>("/auth/reset-password", payload);
+    return unwrap(res);
+  },
+
+  async verifyEmail(token: string): Promise<void> {
+    const res = await apiClient.post<ApiSuccess<null>>("/auth/verify-email", { token });
+    return unwrap(res);
+  },
+
+  async resendVerification(email: string): Promise<void> {
+    const res = await apiClient.post<ApiSuccess<null>>("/auth/resend-verification", { email });
     return unwrap(res);
   },
 };

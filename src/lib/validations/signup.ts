@@ -66,14 +66,18 @@ export const internSignupSchema = z
     resume: z
       .unknown()
       .refine((file): file is File => file instanceof File, { message: "Resume is required" })
-      .refine((file) => fileSizeRefine(file, MAX_FILE_SIZE), `Resume must be under ${MAX_FILE_SIZE_MB}MB`)
+      .refine(
+        (file) => fileSizeRefine(file, MAX_FILE_SIZE),
+        `Resume must be under ${MAX_FILE_SIZE_MB}MB`,
+      )
       .refine(
         (file) => {
           if (!(file instanceof File)) return true;
           const ext = file.name.split(".").pop()?.toLowerCase();
           const allowed =
             file.type === "application/pdf" ||
-            file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+            file.type ===
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
             ext === "pdf" ||
             ext === "docx";
           return allowed;
@@ -82,8 +86,13 @@ export const internSignupSchema = z
       ),
     profilePhoto: z
       .unknown()
-      .refine((file): file is File => file instanceof File, { message: "Profile photo is required" })
-      .refine((file) => fileSizeRefine(file, MAX_FILE_SIZE), `Photo must be under ${MAX_FILE_SIZE_MB}MB`)
+      .refine((file): file is File => file instanceof File, {
+        message: "Profile photo is required",
+      })
+      .refine(
+        (file) => fileSizeRefine(file, MAX_FILE_SIZE),
+        `Photo must be under ${MAX_FILE_SIZE_MB}MB`,
+      )
       .refine(
         (file) => {
           if (!(file instanceof File)) return true;
@@ -92,7 +101,7 @@ export const internSignupSchema = z
         { message: "Profile photo must be PNG, JPG, or WEBP" },
       ),
     startDate: z.string().min(1, "Start date is required"),
-    endDate: z.string().min(1, "End date is required"),
+    endDate: z.string().optional(),
     terms: termsSchema,
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -101,6 +110,7 @@ export const internSignupSchema = z
   })
   .refine(
     (data) => {
+      if (!data.endDate) return true;
       const start = new Date(data.startDate);
       const end = new Date(data.endDate);
       return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && end >= start;

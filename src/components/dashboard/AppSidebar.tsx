@@ -1,18 +1,42 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
-  LayoutDashboard, Users, FolderKanban, ListChecks, CalendarClock,
-  Inbox, BarChart3, FileText, Calendar, Settings, LogOut,
+  LayoutDashboard,
+  Users,
+  FolderKanban,
+  ListChecks,
+  CalendarClock,
+  Inbox,
+  BarChart3,
+  FileText,
+  Calendar,
+  Settings,
+  LogOut,
 } from "lucide-react";
 import {
-  Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
-  SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Logo } from "@/components/Logo";
 import { useAuth } from "@/contexts/auth-context";
 import { useQuery } from "@tanstack/react-query";
 import { attendanceApi } from "@/services/attendance-api";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -22,8 +46,9 @@ export function AppSidebar({ items, footerLabel }: { items: NavItem[]; footerLab
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
-  const isActive = (url: string) => path === url || (url !== "/admin" && url !== "/intern" && path.startsWith(url));
-  
+  const isActive = (url: string) =>
+    path === url || (url !== "/admin" && url !== "/intern" && path.startsWith(url));
+
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showLogoutGuard, setShowLogoutGuard] = useState(false);
@@ -58,8 +83,11 @@ export function AppSidebar({ items, footerLabel }: { items: NavItem[]; footerLab
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}
-                    className="data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-glow data-[active=true]:hover:bg-primary">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    className="data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-glow data-[active=true]:hover:bg-primary"
+                  >
                     <Link to={item.url} className="flex items-center gap-3">
                       <item.icon className="size-4" />
                       {!collapsed && <span className="font-medium">{item.title}</span>}
@@ -72,16 +100,12 @@ export function AppSidebar({ items, footerLabel }: { items: NavItem[]; footerLab
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border p-3">
-        {!collapsed && (
-          <div className="rounded-xl bg-gradient-primary p-4 text-primary-foreground mb-2">
-            <p className="text-xs font-semibold uppercase tracking-wider opacity-80">{footerLabel}</p>
-            <p className="text-sm mt-1">Upgrade to unlock AI Insights.</p>
-            <button className="mt-3 text-xs font-semibold bg-background/20 hover:bg-background/30 px-3 py-1.5 rounded-lg w-full">Upgrade</button>
-          </div>
-        )}
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleLogoutClick} className="w-full justify-start cursor-pointer">
+            <SidebarMenuButton
+              onClick={handleLogoutClick}
+              className="w-full justify-start cursor-pointer"
+            >
               <LogOut className="size-4" />
               {!collapsed && <span>Logout</span>}
             </SidebarMenuButton>
@@ -94,14 +118,15 @@ export function AppSidebar({ items, footerLabel }: { items: NavItem[]; footerLab
             <DialogHeader>
               <DialogTitle>Active Session Detected</DialogTitle>
               <DialogDescription className="text-sm">
-                Please check the attendance. Do you want to stop the check-in and check-out before logging out? If yes, please redirect to attendance to stop your session.
+                Please check the attendance. Do you want to stop the check-in and check-out before
+                logging out? If yes, please redirect to attendance to stop your session.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="mt-4 gap-2">
               <Button variant="outline" onClick={() => setShowLogoutGuard(false)}>
                 Cancel
               </Button>
-              <Button 
+              <Button
                 className="bg-primary text-primary-foreground font-bold shadow-soft"
                 onClick={() => {
                   setShowLogoutGuard(false);
@@ -141,4 +166,5 @@ export const internNavItems: NavItem[] = [
   { title: "Requests", url: "/intern/requests", icon: Inbox },
   { title: "Team Chat", url: "/intern/chat", icon: Users },
   { title: "Calendar", url: "/intern/calendar", icon: Calendar },
+  { title: "Settings", url: "/intern/settings", icon: Settings },
 ];

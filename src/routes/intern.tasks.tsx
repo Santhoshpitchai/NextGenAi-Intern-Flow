@@ -5,7 +5,14 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,8 +45,16 @@ const priorityColors = {
 
 function InternTasks() {
   const queryClient = useQueryClient();
-  const [progressDialog, setProgressDialog] = useState<{ open: boolean; taskId: string | null }>({ open: false, taskId: null });
-  const [progressData, setProgressData] = useState({ percentComplete: 0, summary: "", details: "", blockers: "" });
+  const [progressDialog, setProgressDialog] = useState<{ open: boolean; taskId: string | null }>({
+    open: false,
+    taskId: null,
+  });
+  const [progressData, setProgressData] = useState({
+    percentComplete: 0,
+    summary: "",
+    details: "",
+    blockers: "",
+  });
 
   const { data: assignments, isLoading } = useQuery({
     queryKey: ["my-assignments"],
@@ -47,7 +62,8 @@ function InternTasks() {
   });
 
   const updateTaskMutation = useMutation({
-    mutationFn: ({ taskId, data }: { taskId: string; data: any }) => taskApi.updateTask(taskId, data),
+    mutationFn: ({ taskId, data }: { taskId: string; data: any }) =>
+      taskApi.updateTask(taskId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-assignments"] });
       toast.success("Task updated successfully");
@@ -58,7 +74,8 @@ function InternTasks() {
   });
 
   const addProgressMutation = useMutation({
-    mutationFn: ({ taskId, data }: { taskId: string; data: any }) => taskApi.addProgress(taskId, data),
+    mutationFn: ({ taskId, data }: { taskId: string; data: any }) =>
+      taskApi.addProgress(taskId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-assignments"] });
       setProgressDialog({ open: false, taskId: null });
@@ -82,13 +99,14 @@ function InternTasks() {
     });
   };
 
-  const allTasks = assignments?.flatMap((assignment) =>
-    assignment.tasks.map((task) => ({
-      ...task,
-      assignmentTitle: assignment.title,
-      companyName: assignment.company.name,
-    }))
-  ) || [];
+  const allTasks =
+    assignments?.flatMap((assignment) =>
+      assignment.tasks.map((task) => ({
+        ...task,
+        assignmentTitle: assignment.title,
+        companyName: assignment.company.name,
+      })),
+    ) || [];
 
   const activeTasks = allTasks.filter((t) => t.status !== "DONE" && t.status !== "CANCELLED");
   const completedTasks = allTasks.filter((t) => t.status === "DONE");
@@ -161,16 +179,26 @@ function InternTasks() {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge className={cn("text-xs", statusColors[task.status as keyof typeof statusColors])}>
+                    <Badge
+                      className={cn(
+                        "text-xs",
+                        statusColors[task.status as keyof typeof statusColors],
+                      )}
+                    >
                       {task.status.replace("_", " ")}
                     </Badge>
-                    <Badge className={cn("text-xs", priorityColors[task.priority as keyof typeof priorityColors])}>
+                    <Badge
+                      className={cn(
+                        "text-xs",
+                        priorityColors[task.priority as keyof typeof priorityColors],
+                      )}
+                    >
                       {task.priority}
                     </Badge>
                   </div>
 
                   <h3 className="text-lg font-semibold mb-1">{task.title}</h3>
-                  
+
                   <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
                     <span className="flex items-center gap-1">
                       <ListChecks className="size-4" />
@@ -187,7 +215,9 @@ function InternTasks() {
                         Due: {new Date(task.dueDate).toLocaleDateString()}
                       </span>
                       {new Date(task.dueDate) < new Date() && task.status !== "DONE" && (
-                        <Badge variant="destructive" className="text-xs">Overdue</Badge>
+                        <Badge variant="destructive" className="text-xs">
+                          Overdue
+                        </Badge>
                       )}
                     </div>
                   )}
@@ -205,14 +235,14 @@ function InternTasks() {
                 <div className="flex gap-2">
                   {task.status !== "DONE" && task.status !== "CANCELLED" && (
                     <>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => setProgressDialog({ open: true, taskId: task.id })}
                       >
                         Update Progress
                       </Button>
-                      <Button 
+                      <Button
                         size="sm"
                         onClick={() => handleMarkDone(task.id)}
                         disabled={updateTaskMutation.isPending}
@@ -228,7 +258,10 @@ function InternTasks() {
         </div>
       )}
 
-      <Dialog open={progressDialog.open} onOpenChange={(open) => setProgressDialog({ open, taskId: null })}>
+      <Dialog
+        open={progressDialog.open}
+        onOpenChange={(open) => setProgressDialog({ open, taskId: null })}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Update Task Progress</DialogTitle>
@@ -243,7 +276,12 @@ function InternTasks() {
                 min="0"
                 max="100"
                 value={progressData.percentComplete}
-                onChange={(e) => setProgressData({ ...progressData, percentComplete: parseInt(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setProgressData({
+                    ...progressData,
+                    percentComplete: parseInt(e.target.value) || 0,
+                  })
+                }
               />
             </div>
             <div>
@@ -275,10 +313,13 @@ function InternTasks() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setProgressDialog({ open: false, taskId: null })}>
+            <Button
+              variant="outline"
+              onClick={() => setProgressDialog({ open: false, taskId: null })}
+            >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleUpdateProgress}
               disabled={!progressData.summary || addProgressMutation.isPending}
             >
@@ -290,4 +331,3 @@ function InternTasks() {
     </div>
   );
 }
-

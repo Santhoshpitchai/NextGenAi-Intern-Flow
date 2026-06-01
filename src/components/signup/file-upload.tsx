@@ -71,9 +71,7 @@ export function FileUpload({
           {value ? (
             <>
               <p className="truncate text-sm font-medium">{value.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {(value.size / 1024).toFixed(1)} KB
-              </p>
+              <p className="text-xs text-muted-foreground">{(value.size / 1024).toFixed(1)} KB</p>
             </>
           ) : (
             <p className="text-sm text-muted-foreground">Drag & drop or click to browse</p>
@@ -81,15 +79,14 @@ export function FileUpload({
         </div>
 
         <div className="flex gap-2 sm:shrink-0">
-          <Button
+          <button
             type="button"
-            variant="outline"
-            size="sm"
+            className="flex items-center justify-center h-9 px-4 rounded-xl bg-gradient-primary text-primary-foreground shadow-glow hover:opacity-90 text-xs font-bold transition-all duration-200 cursor-pointer border-none disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={disabled}
             onClick={() => inputRef.current?.click()}
           >
             {value ? "Replace" : "Browse"}
-          </Button>
+          </button>
           {value && (
             <Button
               type="button"

@@ -15,6 +15,11 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default("http://localhost:5173,http://localhost:3000"),
   UPLOAD_DIR: z.string().default("uploads"),
   MAX_FILE_SIZE_MB: z.coerce.number().default(5),
+  SMTP_HOST: z.string().default("smtp.ethereal.email"),
+  SMTP_PORT: z.coerce.number().default(587),
+  SMTP_USER: z.string().optional().default(""),
+  SMTP_PASS: z.string().optional().default(""),
+  FROM_EMAIL: z.string().default("noreply@internflow.ai"),
 });
 
 const parsed = envSchema.safeParse(process.env);

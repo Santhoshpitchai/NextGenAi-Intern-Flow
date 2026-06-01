@@ -5,21 +5,36 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Briefcase, Loader2, Plus } from "lucide-react";
+import { Calendar, Briefcase, Loader2, Plus, FileDown } from "lucide-react";
 import { assignmentApi } from "@/services/assignment-api";
 import { dailyUpdateApi } from "@/services/daily-update-api";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
+import { env } from "@/lib/env";
 
 export const Route = createFileRoute("/intern/updates")({
   head: () => ({ meta: [{ title: "Updates — InternFlow AI" }] }),
   component: InternUpdates,
 });
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 function InternUpdates() {
   const queryClient = useQueryClient();
@@ -92,7 +107,7 @@ function InternUpdates() {
         title="Daily Updates"
         subtitle="Track your progress and share updates with your team"
         actions={
-          <Button 
+          <Button
             className="bg-gradient-primary text-primary-foreground"
             onClick={() => setUpdateDialog(true)}
           >
@@ -105,12 +120,14 @@ function InternUpdates() {
       <div className="space-y-6">
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Your Assignments</h3>
-          
+
           {!assignments || assignments.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Briefcase className="size-12 mx-auto mb-2 opacity-50" />
               <p>No assignments yet</p>
-              <p className="text-xs mt-1">Assignments will appear here when your admin creates them</p>
+              <p className="text-xs mt-1">
+                Assignments will appear here when your admin creates them
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -124,31 +141,95 @@ function InternUpdates() {
                           <Badge variant="outline">{assignment.department}</Badge>
                         )}
                       </div>
-                      
+
                       <h4 className="font-semibold mb-1">{assignment.title}</h4>
                       <p className="text-sm text-muted-foreground mb-2">
                         {assignment.company.name}
                       </p>
-                      
+
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Calendar className="size-4" />
-                          {new Date(assignment.startDate).toLocaleDateString()} - {new Date(assignment.endDate).toLocaleDateString()}
+                          {new Date(assignment.startDate).toLocaleDateString()} -{" "}
+                          {new Date(assignment.endDate).toLocaleDateString()}
                         </span>
                         <span>•</span>
                         <span>{assignment.tasks.length} tasks</span>
                       </div>
 
-                      {assignment.notes && (
-                        <p className="text-sm mt-2 text-muted-foreground">
-                          {assignment.notes}
-                        </p>
-                      )}
+                      {(() => {
+                        const attachmentMatch = assignment.notes?.match(
+                          /\[Attachment: 📄 (.*?)\]\((.*?)\)/,
+                        );
+                        const hasAttachmentUrl = !!attachmentMatch;
+                        const attachmentName = attachmentMatch ? attachmentMatch[1] : null;
+                        let attachmentUrl = attachmentMatch ? attachmentMatch[2] : null;
+                        if (attachmentUrl && attachmentUrl.startsWith("/")) {
+                          attachmentUrl = `${env.apiUrl.replace("/api/v1", "")}${attachmentUrl}`;
+                        }
+
+                        const hasOldAttachment =
+                          assignment.notes?.includes("Attachment: 📄 ") && !hasAttachmentUrl;
+                        const oldAttachmentName = hasOldAttachment
+                          ? assignment.notes.split("Attachment: 📄 ")[1]
+                          : null;
+
+                        const displayNotes = assignment.notes
+                          ? assignment.notes
+                              .replace(/\n\n\[Attachment: 📄 .*?\].*?$/, "")
+                              .replace(/\n\nAttachment: 📄 .*?$/, "")
+                          : assignment.notes;
+
+                        return (
+                          <>
+                            {displayNotes && (
+                              <p className="text-sm mt-2 text-muted-foreground">{displayNotes}</p>
+                            )}
+
+                            {(hasAttachmentUrl || hasOldAttachment) && (
+                              <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-between text-sm">
+                                <span className="font-semibold text-primary truncate max-w-[80%]">
+                                  📄 {attachmentName || oldAttachmentName}
+                                </span>
+                                <div className="flex gap-2">
+                                  {hasAttachmentUrl ? (
+                                    <a
+                                      href={attachmentUrl!}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary hover:text-primary-foreground hover:bg-primary border border-primary/20 rounded-md transition-all"
+                                    >
+                                      <FileDown className="size-3.5" />
+                                      <span>Read Document</span>
+                                    </a>
+                                  ) : (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 text-xs font-semibold text-primary border-primary/20 hover:bg-primary hover:text-primary-foreground"
+                                      onClick={() =>
+                                        toast.success(
+                                          `Downloaded project briefing: ${oldAttachmentName}`,
+                                        )
+                                      }
+                                    >
+                                      <FileDown className="size-3.5 mr-1.5" />
+                                      Read Document
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
 
-                    <Button variant="outline" size="sm">
-                      View Details
-                    </Button>
+                    <Link to="/intern/tasks">
+                      <Button variant="outline" size="sm">
+                        View Tasks
+                      </Button>
+                    </Link>
                   </div>
                 </Card>
               ))}
@@ -183,23 +264,25 @@ function InternUpdates() {
                       {new Date(update.createdAt).toLocaleTimeString()}
                     </span>
                   </div>
-                  
+
                   <h4 className="font-semibold mb-2">{update.summary}</h4>
-                  
+
                   {update.accomplishments && (
                     <div className="mb-2">
-                      <p className="text-xs font-semibold text-muted-foreground mb-1">Accomplishments</p>
+                      <p className="text-xs font-semibold text-muted-foreground mb-1">
+                        Accomplishments
+                      </p>
                       <p className="text-sm">{update.accomplishments}</p>
                     </div>
                   )}
-                  
+
                   {update.challenges && (
                     <div className="mb-2">
                       <p className="text-xs font-semibold text-muted-foreground mb-1">Challenges</p>
                       <p className="text-sm">{update.challenges}</p>
                     </div>
                   )}
-                  
+
                   {update.nextSteps && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground mb-1">Next Steps</p>
@@ -279,7 +362,7 @@ function InternUpdates() {
             <Button variant="outline" onClick={() => setUpdateDialog(false)}>
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleSubmitUpdate}
               disabled={!updateData.summary || createUpdateMutation.isPending}
             >
@@ -298,4 +381,3 @@ function InternUpdates() {
     </div>
   );
 }
-

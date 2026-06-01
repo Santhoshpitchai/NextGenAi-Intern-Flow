@@ -79,7 +79,10 @@ function RequestsPage() {
 
   return (
     <div>
-      <PageHeader title="Requests" subtitle="Approve, reject, or comment on open intern requests." />
+      <PageHeader
+        title="Requests"
+        subtitle="Approve, reject, or comment on open intern requests."
+      />
       <div className="grid lg:grid-cols-2 gap-5">
         {list.length === 0 ? (
           <div className="col-span-2 text-center py-12 text-muted-foreground glass rounded-2xl">
@@ -94,7 +97,12 @@ function RequestsPage() {
             return (
               <div key={r.id} className="p-6 rounded-2xl glass shadow-soft">
                 <div className="flex items-start gap-4">
-                  <div className={cn("size-11 rounded-xl grid place-items-center shrink-0", toneBg[tone])}>
+                  <div
+                    className={cn(
+                      "size-11 rounded-xl grid place-items-center shrink-0",
+                      toneBg[tone],
+                    )}
+                  >
                     <IconComponent className="size-5" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -102,28 +110,37 @@ function RequestsPage() {
                       <div>
                         <h3 className="font-semibold leading-snug">{r.title}</h3>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {r.createdBy?.intern?.fullName || r.createdBy?.email} · {r.type.replace("_", " ")} · {createdDate}
+                          {r.createdBy?.intern?.fullName || r.createdBy?.email} ·{" "}
+                          {r.type.replace("_", " ")} · {createdDate}
                         </p>
                       </div>
                       <div className="shrink-0">
-                        <span className={cn(
-                          "px-2.5 py-1 rounded-full text-xs font-bold capitalize",
-                          r.status === "APPROVED" ? "bg-success/10 text-success" :
-                          r.status === "REJECTED" ? "bg-destructive/10 text-destructive" :
-                          "bg-warning/10 text-warning"
-                        )}>
+                        <span
+                          className={cn(
+                            "px-2.5 py-1 rounded-full text-xs font-bold capitalize",
+                            r.status === "APPROVED"
+                              ? "bg-success/10 text-success"
+                              : r.status === "REJECTED"
+                                ? "bg-destructive/10 text-destructive"
+                                : "bg-warning/10 text-warning",
+                          )}
+                        >
                           {r.status.toLowerCase()}
                         </span>
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{r.description}</p>
+                    <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+                      {r.description}
+                    </p>
 
                     {r.status === "PENDING" && (
                       <div className="mt-5 flex items-center gap-2">
                         <Button
                           size="sm"
                           className="bg-success text-success-foreground hover:opacity-90"
-                          onClick={() => updateRequestMutation.mutate({ id: r.id, status: "APPROVED" })}
+                          onClick={() =>
+                            updateRequestMutation.mutate({ id: r.id, status: "APPROVED" })
+                          }
                           disabled={updateRequestMutation.isPending}
                         >
                           <Check className="size-4" /> Approve
@@ -131,7 +148,9 @@ function RequestsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => updateRequestMutation.mutate({ id: r.id, status: "REJECTED" })}
+                          onClick={() =>
+                            updateRequestMutation.mutate({ id: r.id, status: "REJECTED" })
+                          }
                           disabled={updateRequestMutation.isPending}
                         >
                           <X className="size-4" /> Reject

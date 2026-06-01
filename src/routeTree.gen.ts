@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InternRouteImport } from './routes/intern'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -19,6 +21,7 @@ import { Route as InternIndexRouteImport } from './routes/intern.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as InternUpdatesRouteImport } from './routes/intern.updates'
 import { Route as InternTasksRouteImport } from './routes/intern.tasks'
+import { Route as InternSettingsRouteImport } from './routes/intern.settings'
 import { Route as InternRequestsRouteImport } from './routes/intern.requests'
 import { Route as InternPerformanceRouteImport } from './routes/intern.performance'
 import { Route as InternChatRouteImport } from './routes/intern.chat'
@@ -35,9 +38,19 @@ import { Route as AdminCalendarRouteImport } from './routes/admin.calendar'
 import { Route as AdminAttendanceRouteImport } from './routes/admin.attendance'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -83,6 +96,11 @@ const InternUpdatesRoute = InternUpdatesRouteImport.update({
 const InternTasksRoute = InternTasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
+  getParentRoute: () => InternRoute,
+} as any)
+const InternSettingsRoute = InternSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => InternRoute,
 } as any)
 const InternRequestsRoute = InternRequestsRouteImport.update({
@@ -167,7 +185,9 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/intern': typeof InternRouteWithChildren
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -183,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/intern/chat': typeof InternChatRoute
   '/intern/performance': typeof InternPerformanceRoute
   '/intern/requests': typeof InternRequestsRoute
+  '/intern/settings': typeof InternSettingsRoute
   '/intern/tasks': typeof InternTasksRoute
   '/intern/updates': typeof InternUpdatesRoute
   '/admin/': typeof AdminIndexRoute
@@ -192,7 +213,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -208,6 +231,7 @@ export interface FileRoutesByTo {
   '/intern/chat': typeof InternChatRoute
   '/intern/performance': typeof InternPerformanceRoute
   '/intern/requests': typeof InternRequestsRoute
+  '/intern/settings': typeof InternSettingsRoute
   '/intern/tasks': typeof InternTasksRoute
   '/intern/updates': typeof InternUpdatesRoute
   '/admin': typeof AdminIndexRoute
@@ -220,7 +244,9 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/intern': typeof InternRouteWithChildren
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -236,6 +262,7 @@ export interface FileRoutesById {
   '/intern/chat': typeof InternChatRoute
   '/intern/performance': typeof InternPerformanceRoute
   '/intern/requests': typeof InternRequestsRoute
+  '/intern/settings': typeof InternSettingsRoute
   '/intern/tasks': typeof InternTasksRoute
   '/intern/updates': typeof InternUpdatesRoute
   '/admin/': typeof AdminIndexRoute
@@ -249,7 +276,9 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/intern'
     | '/login'
+    | '/reset-password'
     | '/signup'
+    | '/verify-email'
     | '/admin/analytics'
     | '/admin/attendance'
     | '/admin/calendar'
@@ -265,6 +294,7 @@ export interface FileRouteTypes {
     | '/intern/chat'
     | '/intern/performance'
     | '/intern/requests'
+    | '/intern/settings'
     | '/intern/tasks'
     | '/intern/updates'
     | '/admin/'
@@ -274,7 +304,9 @@ export interface FileRouteTypes {
     | '/'
     | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/signup'
+    | '/verify-email'
     | '/admin/analytics'
     | '/admin/attendance'
     | '/admin/calendar'
@@ -290,6 +322,7 @@ export interface FileRouteTypes {
     | '/intern/chat'
     | '/intern/performance'
     | '/intern/requests'
+    | '/intern/settings'
     | '/intern/tasks'
     | '/intern/updates'
     | '/admin'
@@ -301,7 +334,9 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/intern'
     | '/login'
+    | '/reset-password'
     | '/signup'
+    | '/verify-email'
     | '/admin/analytics'
     | '/admin/attendance'
     | '/admin/calendar'
@@ -317,6 +352,7 @@ export interface FileRouteTypes {
     | '/intern/chat'
     | '/intern/performance'
     | '/intern/requests'
+    | '/intern/settings'
     | '/intern/tasks'
     | '/intern/updates'
     | '/admin/'
@@ -329,16 +365,32 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   InternRoute: typeof InternRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -402,6 +454,13 @@ declare module '@tanstack/react-router' {
       path: '/tasks'
       fullPath: '/intern/tasks'
       preLoaderRoute: typeof InternTasksRouteImport
+      parentRoute: typeof InternRoute
+    }
+    '/intern/settings': {
+      id: '/intern/settings'
+      path: '/settings'
+      fullPath: '/intern/settings'
+      preLoaderRoute: typeof InternSettingsRouteImport
       parentRoute: typeof InternRoute
     }
     '/intern/requests': {
@@ -548,6 +607,7 @@ interface InternRouteChildren {
   InternChatRoute: typeof InternChatRoute
   InternPerformanceRoute: typeof InternPerformanceRoute
   InternRequestsRoute: typeof InternRequestsRoute
+  InternSettingsRoute: typeof InternSettingsRoute
   InternTasksRoute: typeof InternTasksRoute
   InternUpdatesRoute: typeof InternUpdatesRoute
   InternIndexRoute: typeof InternIndexRoute
@@ -559,6 +619,7 @@ const InternRouteChildren: InternRouteChildren = {
   InternChatRoute: InternChatRoute,
   InternPerformanceRoute: InternPerformanceRoute,
   InternRequestsRoute: InternRequestsRoute,
+  InternSettingsRoute: InternSettingsRoute,
   InternTasksRoute: InternTasksRoute,
   InternUpdatesRoute: InternUpdatesRoute,
   InternIndexRoute: InternIndexRoute,
@@ -573,7 +634,9 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   InternRoute: InternRouteWithChildren,
   LoginRoute: LoginRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

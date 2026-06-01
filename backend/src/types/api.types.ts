@@ -40,7 +40,7 @@ export interface InternProfilePublic {
   resumeUrl: string | null;
   profilePhotoUrl: string | null;
   startDate: string;
-  endDate: string;
+  endDate: string | null;
 }
 
 export interface CompanyAdminProfilePublic {

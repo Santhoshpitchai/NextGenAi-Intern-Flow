@@ -14,7 +14,8 @@ export function HeroMockup() {
             </div>
             <div className="space-y-1.5">
               <div className="h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center px-3 gap-2">
-                <div className="size-3 rounded bg-primary/40" /><div className="h-2 w-16 bg-primary/40 rounded" />
+                <div className="size-3 rounded bg-primary/40" />
+                <div className="h-2 w-16 bg-primary/40 rounded" />
               </div>
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="h-8 rounded-lg flex items-center px-3 gap-2">
@@ -43,9 +44,14 @@ export function HeroMockup() {
                 { v: "1.2K", l: "Tasks Done", c: "from-secondary/20 to-secondary/5" },
                 { v: "94%", l: "Productivity", c: "from-success/20 to-success/5" },
               ].map((s) => (
-                <div key={s.l} className={`p-3 rounded-xl border border-border bg-gradient-to-br ${s.c}`}>
+                <div
+                  key={s.l}
+                  className={`p-3 rounded-xl border border-border bg-gradient-to-br ${s.c}`}
+                >
                   <div className="text-xl font-bold">{s.v}</div>
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{s.l}</div>
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                    {s.l}
+                  </div>
                 </div>
               ))}
             </div>
@@ -57,7 +63,11 @@ export function HeroMockup() {
               </div>
               <div className="flex items-end gap-1.5 h-24">
                 {[40, 65, 50, 75, 60, 85, 70, 90, 78, 95, 82, 100].map((h, i) => (
-                  <div key={i} className="flex-1 rounded-t bg-gradient-to-t from-primary to-secondary" style={{ height: `${h}%` }} />
+                  <div
+                    key={i}
+                    className="flex-1 rounded-t bg-gradient-to-t from-primary to-secondary"
+                    style={{ height: `${h}%` }}
+                  />
                 ))}
               </div>
             </div>
@@ -77,9 +87,14 @@ export function HeroMockup() {
           ))}
         </div>
       </div>
-      <div className="hidden md:block absolute -right-6 top-16 glass rounded-2xl p-4 w-60 shadow-glass animate-float" style={{ animationDelay: "1.5s" }}>
+      <div
+        className="hidden md:block absolute -right-6 top-16 glass rounded-2xl p-4 w-60 shadow-glass animate-float"
+        style={{ animationDelay: "1.5s" }}
+      >
         <div className="flex items-center gap-3">
-          <div className="size-9 rounded-full bg-gradient-primary grid place-items-center text-primary-foreground font-bold text-sm">AR</div>
+          <div className="size-9 rounded-full bg-gradient-primary grid place-items-center text-primary-foreground font-bold text-sm">
+            AR
+          </div>
           <div className="flex-1">
             <div className="text-sm font-semibold">Alex Rivera</div>
             <div className="text-[10px] text-muted-foreground">Engineering Intern</div>
@@ -87,16 +102,26 @@ export function HeroMockup() {
           <CheckCircle2 className="size-4 text-success" />
         </div>
         <div className="mt-3">
-          <div className="flex justify-between text-[10px] mb-1"><span className="text-muted-foreground">Sprint Progress</span><span className="font-semibold">92%</span></div>
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden"><div className="h-full w-[92%] bg-gradient-primary" /></div>
+          <div className="flex justify-between text-[10px] mb-1">
+            <span className="text-muted-foreground">Sprint Progress</span>
+            <span className="font-semibold">92%</span>
+          </div>
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div className="h-full w-[92%] bg-gradient-primary" />
+          </div>
         </div>
       </div>
-      <div className="hidden md:block absolute -right-10 bottom-12 glass rounded-2xl p-3 w-44 shadow-glass animate-float" style={{ animationDelay: "0.7s" }}>
+      <div
+        className="hidden md:block absolute -right-10 bottom-12 glass rounded-2xl p-3 w-44 shadow-glass animate-float"
+        style={{ animationDelay: "0.7s" }}
+      >
         <div className="flex items-center gap-2 mb-1">
           <Sparkles className="size-4 text-primary" />
           <div className="text-xs font-semibold">AI Insight</div>
         </div>
-        <p className="text-[11px] text-muted-foreground leading-snug">3 interns are ahead of schedule this week.</p>
+        <p className="text-[11px] text-muted-foreground leading-snug">
+          3 interns are ahead of schedule this week.
+        </p>
       </div>
     </div>
   );

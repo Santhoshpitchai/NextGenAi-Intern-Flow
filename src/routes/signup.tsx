@@ -65,7 +65,9 @@ function SignupPage() {
                 onClick={() => setRole(r.id)}
                 className={cn(
                   "relative z-10 flex h-10 items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-colors duration-200",
-                  role === r.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/80",
+                  role === r.id
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground/80",
                 )}
               >
                 <r.icon className="size-4" />

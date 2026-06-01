@@ -20,7 +20,15 @@ const requireRole = (roles: UserRole[]) => {
 router.post("/check-in", requireRole([UserRole.INTERN]), attendanceController.checkIn);
 router.post("/check-out", requireRole([UserRole.INTERN]), attendanceController.checkOut);
 router.get("/my", requireRole([UserRole.INTERN]), attendanceController.getMyRecords);
-router.get("/today", requireRole([UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN]), attendanceController.getTodayRecords);
-router.get("/all", requireRole([UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN]), attendanceController.getAllRecords);
+router.get(
+  "/today",
+  requireRole([UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN]),
+  attendanceController.getTodayRecords,
+);
+router.get(
+  "/all",
+  requireRole([UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN]),
+  attendanceController.getAllRecords,
+);
 
 export default router;

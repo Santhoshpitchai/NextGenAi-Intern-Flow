@@ -26,24 +26,13 @@ router.patch(
 );
 
 // Get own profile
-router.get(
-  "/profile",
-  requirePermission("VIEW_OWN_PROFILE"),
-  userController.getProfile,
-);
+router.get("/profile", requirePermission("VIEW_OWN_PROFILE"), userController.getProfile);
 
 // Directory list for chat (Admins and Interns)
-router.get(
-  "/directory",
-  userController.getChatDirectory,
-);
+router.get("/directory", userController.getChatDirectory);
 
 // Admin-only: Get all users
-router.get(
-  "/",
-  requirePermission("VIEW_ALL_INTERNS"),
-  userController.getAllUsers,
-);
+router.get("/", requirePermission("VIEW_ALL_INTERNS"), userController.getAllUsers);
 
 // Admin-only: Get admin dashboard stats
 router.get(
@@ -53,10 +42,6 @@ router.get(
 );
 
 // Admin-only: Get user by ID
-router.get(
-  "/:userId",
-  requirePermission("VIEW_ALL_INTERNS"),
-  userController.getUserById,
-);
+router.get("/:userId", requirePermission("VIEW_ALL_INTERNS"), userController.getUserById);
 
 export default router;

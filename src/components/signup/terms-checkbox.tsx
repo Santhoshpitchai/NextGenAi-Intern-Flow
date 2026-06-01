@@ -34,7 +34,10 @@ export function TermsCheckbox({
           onCheckedChange={(v) => onCheckedChange(v === true)}
           className="mt-0.5"
         />
-        <Label htmlFor={id} className="cursor-pointer text-sm font-normal leading-relaxed text-muted-foreground">
+        <Label
+          htmlFor={id}
+          className="cursor-pointer text-sm font-normal leading-relaxed text-muted-foreground"
+        >
           I agree to the{" "}
           <button
             type="button"

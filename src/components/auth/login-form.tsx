@@ -64,7 +64,7 @@ export function LoginForm() {
         return;
       }
 
-      onAuthSuccess(result);
+      onAuthSuccess(result, values.remember);
     } catch (err) {
       if (err instanceof ApiRequestError) {
         toast.error(err.message);
@@ -76,7 +76,6 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5" noValidate>
-
       {/* Role Toggle Selector */}
       <div>
         <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">
@@ -90,7 +89,7 @@ export function LoginForm() {
               "flex items-center justify-center gap-2 rounded-lg py-2.5 px-4 text-sm font-bold transition-all duration-200 cursor-pointer",
               selectedRole === "INTERN"
                 ? "bg-gradient-primary text-primary-foreground shadow-glow"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
             )}
           >
             <User className="size-4 shrink-0" />
@@ -103,7 +102,7 @@ export function LoginForm() {
               "flex items-center justify-center gap-2 rounded-lg py-2.5 px-4 text-sm font-bold transition-all duration-200 cursor-pointer",
               selectedRole === "ADMIN"
                 ? "bg-gradient-primary text-primary-foreground shadow-glow"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
             )}
           >
             <Shield className="size-4 shrink-0" />
@@ -118,7 +117,10 @@ export function LoginForm() {
       </div>
 
       <div>
-        <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <Label
+          htmlFor="email"
+          className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+        >
           {selectedRole === "ADMIN" ? "Admin Email" : "Intern Email"}
         </Label>
         <div className="relative mt-1.5">
@@ -133,12 +135,17 @@ export function LoginForm() {
           />
         </div>
         {errors.email && (
-          <p className="mt-1.5 text-[0.8rem] font-medium text-destructive">{errors.email.message}</p>
+          <p className="mt-1.5 text-[0.8rem] font-medium text-destructive">
+            {errors.email.message}
+          </p>
         )}
       </div>
 
       <div>
-        <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <Label
+          htmlFor="password"
+          className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+        >
           Password
         </Label>
         <div className="relative mt-1.5">
@@ -153,7 +160,9 @@ export function LoginForm() {
           />
         </div>
         {errors.password && (
-          <p className="mt-1.5 text-[0.8rem] font-medium text-destructive">{errors.password.message}</p>
+          <p className="mt-1.5 text-[0.8rem] font-medium text-destructive">
+            {errors.password.message}
+          </p>
         )}
       </div>
 
@@ -163,10 +172,7 @@ export function LoginForm() {
             control={control}
             name="remember"
             render={({ field }) => (
-              <Checkbox
-                checked={field.value}
-                onCheckedChange={field.onChange}
-              />
+              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
             )}
           />
           <span>Remember me</span>

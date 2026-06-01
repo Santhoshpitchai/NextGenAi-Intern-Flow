@@ -93,7 +93,7 @@ export async function getAssignments(options: GetAssignmentsOptions) {
   const { userId, userRole, page = 1, limit = 10, status, internId } = options;
   const skip = (page - 1) * limit;
 
-  let where: any = { deletedAt: null };
+  const where: any = { deletedAt: null };
 
   // Role-based filtering
   if (userRole === UserRole.INTERN) {
@@ -214,7 +214,7 @@ export async function updateAssignment(
   id: string,
   input: UpdateAssignmentInput,
   userId: string,
-  userRole: UserRole
+  userRole: UserRole,
 ) {
   const existing = await prisma.internshipAssignment.findFirst({
     where: { id, deletedAt: null },

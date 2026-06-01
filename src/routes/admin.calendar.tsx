@@ -27,8 +27,18 @@ function CalendarPage() {
   const currentMonth = currentDate.getMonth();
 
   const monthNames = [
-    "January", "February", "March", "April", "May", "June", 
-    "July", "August", "September", "October", "November", "December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
 
   // Fetch all tasks from backend
@@ -72,9 +82,9 @@ function CalendarPage() {
   // Add actual days
   const todayDate = new Date();
   for (let d = 1; d <= totalDaysInMonth; d++) {
-    const isToday = 
-      todayDate.getDate() === d && 
-      todayDate.getMonth() === currentMonth && 
+    const isToday =
+      todayDate.getDate() === d &&
+      todayDate.getMonth() === currentMonth &&
       todayDate.getFullYear() === currentYear;
     cells.push({ day: d, isToday, inMonth: true });
   }
@@ -94,7 +104,11 @@ function CalendarPage() {
     tasksList.forEach((t) => {
       if (t.dueDate) {
         const d = new Date(t.dueDate);
-        if (d.getDate() === day && d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+        if (
+          d.getDate() === day &&
+          d.getMonth() === currentMonth &&
+          d.getFullYear() === currentYear
+        ) {
           eventsList.push({ type: "deadline", label: `🏁 [Task] ${t.title}` });
         }
       }
@@ -122,7 +136,7 @@ function CalendarPage() {
           </div>
         }
       />
-      
+
       <div className="rounded-2xl glass shadow-soft p-5">
         <div className="grid grid-cols-7 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 text-center">
           {daysOfWeek.map((d) => (
@@ -137,17 +151,24 @@ function CalendarPage() {
             const dayEvents = cell.day ? getDayEvents(cell.day) : [];
 
             return (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className={cn(
                   "min-h-[110px] rounded-xl border p-2 text-xs flex flex-col gap-1 transition-all",
-                  cell.inMonth ? "bg-background border-border" : "bg-muted/10 border-transparent text-muted-foreground/30",
+                  cell.inMonth
+                    ? "bg-background border-border"
+                    : "bg-muted/10 border-transparent text-muted-foreground/30",
                   cell.isToday && "ring-2 ring-primary border-primary/30 bg-primary/5",
                 )}
               >
                 {cell.day && (
                   <div className="flex items-center justify-between">
-                    <span className={cn("font-semibold text-xs", cell.isToday ? "text-primary font-bold" : "text-muted-foreground")}>
+                    <span
+                      className={cn(
+                        "font-semibold text-xs",
+                        cell.isToday ? "text-primary font-bold" : "text-muted-foreground",
+                      )}
+                    >
                       {cell.day}
                     </span>
                     {cell.isToday && (
@@ -155,13 +176,16 @@ function CalendarPage() {
                     )}
                   </div>
                 )}
-                
+
                 {cell.day && (
                   <div className="flex-1 overflow-y-auto space-y-1 mt-1 pr-0.5 max-h-[80px] scrollbar-thin">
                     {dayEvents.map((e, idx) => (
-                      <div 
-                        key={idx} 
-                        className={cn("text-[9px] px-1.5 py-0.5 rounded-md border truncate leading-relaxed", tone[e.type])}
+                      <div
+                        key={idx}
+                        className={cn(
+                          "text-[9px] px-1.5 py-0.5 rounded-md border truncate leading-relaxed",
+                          tone[e.type],
+                        )}
                         title={e.label}
                       >
                         {e.label}

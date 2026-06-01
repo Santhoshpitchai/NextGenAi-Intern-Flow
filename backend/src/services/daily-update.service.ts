@@ -11,7 +11,7 @@ export interface CreateDailyUpdateDto {
 export const dailyUpdateService = {
   async createUpdate(userId: string, data: CreateDailyUpdateDto) {
     const date = data.date || new Date();
-    
+
     // Check if update already exists for this date
     const existing = await prisma.dailyUpdate.findUnique({
       where: {

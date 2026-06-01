@@ -19,9 +19,17 @@ const requireRole = (roles: UserRole[]) => {
 
 router.post("/", requestController.createRequest);
 router.get("/my", requestController.getMyRequests);
-router.get("/all", requireRole([UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN]), requestController.getAllRequests);
+router.get(
+  "/all",
+  requireRole([UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN]),
+  requestController.getAllRequests,
+);
 router.get("/:id", requestController.getRequestById);
-router.patch("/:id", requireRole([UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN]), requestController.updateRequest);
+router.patch(
+  "/:id",
+  requireRole([UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN]),
+  requestController.updateRequest,
+);
 router.delete("/:id", requestController.deleteRequest);
 
 export default router;

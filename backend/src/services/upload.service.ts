@@ -64,3 +64,8 @@ export async function uploadProfilePhoto(
 
   return toPublicUser(updated);
 }
+
+export async function uploadAttachment(userId: string, file: Express.Multer.File) {
+  const record = await createFileRecord(userId, file, FileKind.TASK_ATTACHMENT, "attachments");
+  return record;
+}

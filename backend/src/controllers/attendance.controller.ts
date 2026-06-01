@@ -2,9 +2,9 @@ import { Request, Response, NextFunction } from "express";
 import { attendanceService } from "../services/attendance.service.js";
 
 export const attendanceController = {
-  async checkIn(req: Request, res: Response, next: NextFunction) {
+  async checkIn(_req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.id;
+      const userId = _req.user!.id;
       const record = await attendanceService.checkIn(userId);
       res.status(201).json(record);
     } catch (error) {
@@ -33,7 +33,7 @@ export const attendanceController = {
     }
   },
 
-  async getTodayRecords(req: Request, res: Response, next: NextFunction) {
+  async getTodayRecords(_req: Request, res: Response, next: NextFunction) {
     try {
       const records = await attendanceService.getTodayAttendance();
       res.json(records);

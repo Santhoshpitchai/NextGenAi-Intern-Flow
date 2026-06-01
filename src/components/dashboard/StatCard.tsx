@@ -1,8 +1,19 @@
 import { type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function StatCard({ icon: Icon, label, value, delta, trend = "up", tone = "primary" }: {
-  icon: LucideIcon; label: string; value: string; delta?: string; trend?: "up" | "down";
+export function StatCard({
+  icon: Icon,
+  label,
+  value,
+  delta,
+  trend = "up",
+  tone = "primary",
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  delta?: string;
+  trend?: "up" | "down";
   tone?: "primary" | "secondary" | "success" | "warning";
 }) {
   const tones: Record<string, string> = {
@@ -14,12 +25,21 @@ export function StatCard({ icon: Icon, label, value, delta, trend = "up", tone =
   return (
     <div className="p-5 rounded-2xl glass shadow-soft">
       <div className="flex items-start justify-between">
-        <div className={cn("size-10 rounded-xl grid place-items-center bg-gradient-to-br", tones[tone])}>
+        <div
+          className={cn(
+            "size-10 rounded-xl grid place-items-center bg-gradient-to-br",
+            tones[tone],
+          )}
+        >
           <Icon className="size-5" />
         </div>
         {delta && (
-          <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full",
-            trend === "up" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive")}>
+          <span
+            className={cn(
+              "text-xs font-semibold px-2 py-0.5 rounded-full",
+              trend === "up" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive",
+            )}
+          >
             {trend === "up" ? "↑" : "↓"} {delta}
           </span>
         )}

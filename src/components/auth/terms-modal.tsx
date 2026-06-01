@@ -31,35 +31,47 @@ export function TermsModal({ open, onOpenChange }: ModalProps) {
             <section className="space-y-2">
               <h4 className="font-semibold text-foreground">1. Acceptance of Terms</h4>
               <p>
-                By creating an account, logging in, or using InternFlow AI (the &quot;Service&quot;), you agree to be bound by these Terms of Service. If you do not agree to these terms, you may not access or use the Service.
+                By creating an account, logging in, or using InternFlow AI (the
+                &quot;Service&quot;), you agree to be bound by these Terms of Service. If you do not
+                agree to these terms, you may not access or use the Service.
               </p>
             </section>
 
             <section className="space-y-2">
               <h4 className="font-semibold text-foreground">2. Description of Service</h4>
               <p>
-                InternFlow AI is a web application designed to facilitate internship program management, task assignment, productivity tracking, daily update loops, and collaboration between administrators and interns. The Service is developed and maintained in collaboration with NextGen AI Automation.
+                InternFlow AI is a web application designed to facilitate internship program
+                management, task assignment, productivity tracking, daily update loops, and
+                collaboration between administrators and interns. The Service is developed and
+                maintained in collaboration with NextGen AI Automation.
               </p>
             </section>
 
             <section className="space-y-2">
               <h4 className="font-semibold text-foreground">3. Account Registration & Roles</h4>
               <p>
-                You must provide accurate, complete, and current information when registering. You are responsible for safeguarding your login credentials. You agree not to disclose your password to any third party. Mismatched role authentication (e.g., trying to access admin portals with intern credentials) is strictly monitored and restricted.
+                You must provide accurate, complete, and current information when registering. You
+                are responsible for safeguarding your login credentials. You agree not to disclose
+                your password to any third party. Mismatched role authentication (e.g., trying to
+                access admin portals with intern credentials) is strictly monitored and restricted.
               </p>
             </section>
 
             <section className="space-y-2">
               <h4 className="font-semibold text-foreground">4. Code of Conduct</h4>
               <p>
-                Users agree not to use the Service for any unlawful activities, upload malicious code, disrupt the operations of other workspaces, or spam messaging channels. Admins and interns are expected to maintain professional standards during communications.
+                Users agree not to use the Service for any unlawful activities, upload malicious
+                code, disrupt the operations of other workspaces, or spam messaging channels. Admins
+                and interns are expected to maintain professional standards during communications.
               </p>
             </section>
 
             <section className="space-y-2">
               <h4 className="font-semibold text-foreground">5. Limitation of Liability</h4>
               <p>
-                In no event shall InternFlow AI or NextGen AI Automation be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or workspace availability, arising out of your use of the Service.
+                In no event shall InternFlow AI or NextGen AI Automation be liable for any indirect,
+                incidental, special, consequential, or punitive damages, including loss of profits,
+                data, or workspace availability, arising out of your use of the Service.
               </p>
             </section>
 
@@ -69,7 +81,10 @@ export function TermsModal({ open, onOpenChange }: ModalProps) {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button type="button" className="bg-gradient-primary text-primary-foreground font-bold shadow-glow">
+            <Button
+              type="button"
+              className="bg-gradient-primary text-primary-foreground font-bold shadow-glow"
+            >
               Understood
             </Button>
           </DialogClose>
@@ -95,7 +110,8 @@ export function PrivacyModal({ open, onOpenChange }: ModalProps) {
             <section className="space-y-2">
               <h4 className="font-semibold text-foreground">1. Information We Collect</h4>
               <p>
-                We collect personal information that you voluntarily provide to us when you register on the Service. This includes:
+                We collect personal information that you voluntarily provide to us when you register
+                on the Service. This includes:
               </p>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Full Name, email address, phone number, and password.</li>
@@ -108,7 +124,8 @@ export function PrivacyModal({ open, onOpenChange }: ModalProps) {
             <section className="space-y-2">
               <h4 className="font-semibold text-foreground">2. How We Use Your Data</h4>
               <p>
-                We use the collected data to operate, maintain, and optimize the Service. Specifically:
+                We use the collected data to operate, maintain, and optimize the Service.
+                Specifically:
               </p>
               <ul className="list-disc pl-5 space-y-1">
                 <li>To build your intern profile card and showcase achievements to managers.</li>
@@ -121,14 +138,17 @@ export function PrivacyModal({ open, onOpenChange }: ModalProps) {
             <section className="space-y-2">
               <h4 className="font-semibold text-foreground">3. Security Measures</h4>
               <p>
-                We implement industry-standard cryptographic hashing and access control mechanisms to secure your credentials and private files from unauthorized access, leakage, or loss.
+                We implement industry-standard cryptographic hashing and access control mechanisms
+                to secure your credentials and private files from unauthorized access, leakage, or
+                loss.
               </p>
             </section>
 
             <section className="space-y-2">
               <h4 className="font-semibold text-foreground">4. Third-Party Sharing</h4>
               <p>
-                We do not sell, rent, or trade your personal data. Sharing only occurs with core storage integrations required for profile image hosting and resume storage.
+                We do not sell, rent, or trade your personal data. Sharing only occurs with core
+                storage integrations required for profile image hosting and resume storage.
               </p>
             </section>
 
@@ -138,7 +158,10 @@ export function PrivacyModal({ open, onOpenChange }: ModalProps) {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button type="button" className="bg-gradient-primary text-primary-foreground font-bold shadow-glow">
+            <Button
+              type="button"
+              className="bg-gradient-primary text-primary-foreground font-bold shadow-glow"
+            >
               Close
             </Button>
           </DialogClose>

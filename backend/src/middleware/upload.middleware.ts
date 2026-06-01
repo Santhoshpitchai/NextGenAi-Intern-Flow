@@ -11,6 +11,13 @@ const RESUME_MIMES = new Set([
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ]);
 
+const ATTACHMENT_MIMES = new Set([
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/msword",
+  "text/plain",
+]);
+
 const IMAGE_MIMES = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
 
 function ensureDir(dir: string) {
@@ -57,6 +64,12 @@ export const uploadProfilePhoto = multer({
   storage: diskStorage("photos"),
   limits: baseLimits,
   fileFilter: fileFilter(IMAGE_MIMES, [".jpg", ".jpeg", ".png", ".webp"]),
+});
+
+export const uploadAttachment = multer({
+  storage: diskStorage("attachments"),
+  limits: baseLimits,
+  fileFilter: fileFilter(ATTACHMENT_MIMES, [".pdf", ".doc", ".docx", ".txt"]),
 });
 
 export const uploadInternRegistration = multer({

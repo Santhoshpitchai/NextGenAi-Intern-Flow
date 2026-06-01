@@ -4,14 +4,30 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, Plus, Loader2, FileDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FileUpload } from "@/components/signup/file-upload";
+import { env } from "@/lib/env";
 import { assignmentApi } from "@/services/assignment-api";
 import { userApi } from "@/services/user-api";
+import { uploadApi } from "@/services/upload-api";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/projects")({
@@ -31,6 +47,7 @@ function ProjectsPage() {
     notes: "",
   });
   const [projectFile, setProjectFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const { data: assignmentsData, isLoading: loadingAssignments } = useQuery({
     queryKey: ["all-assignments"],
@@ -67,16 +84,31 @@ function ProjectsPage() {
     setProjectFile(null);
   };
 
-  const handleSubmit = () => {
-    if (!formData.title || !formData.department || !formData.startDate || !formData.endDate || !formData.internId) {
+  const handleSubmit = async () => {
+    if (
+      !formData.title ||
+      !formData.department ||
+      !formData.startDate ||
+      !formData.endDate ||
+      !formData.internId
+    ) {
       toast.error("Please fill in all required fields");
       return;
     }
 
-    // Capture briefing attachment metadata inside notes field for clean cross-module sync
     let finalNotes = formData.notes;
     if (projectFile) {
-      finalNotes = `${formData.notes}\n\nAttachment: 📄 ${projectFile.name}`;
+      try {
+        setIsUploading(true);
+        const { url } = await uploadApi.uploadAttachment(projectFile);
+        finalNotes = `${formData.notes}\n\n[Attachment: 📄 ${projectFile.name}](${url})`;
+      } catch (error: any) {
+        toast.error("Failed to upload document");
+        setIsUploading(false);
+        return;
+      } finally {
+        setIsUploading(false);
+      }
     }
 
     const payload = {
@@ -128,7 +160,7 @@ function ProjectsPage() {
         title="Projects"
         subtitle="Active initiatives across all departments."
         actions={
-          <Button 
+          <Button
             className="bg-gradient-primary text-primary-foreground shadow-glow"
             onClick={() => setAddProjectDialog(true)}
           >
@@ -147,38 +179,84 @@ function ProjectsPage() {
             const total = p.tasks.length;
             const progress = total > 0 ? Math.round((completed / total) * 100) : 75; // fallback
             const initials = p.intern?.fullName
-              ? p.intern.fullName.split(" ").map((s: string) => s[0]).join("").toUpperCase()
+              ? p.intern.fullName
+                  .split(" ")
+                  .map((s: string) => s[0])
+                  .join("")
+                  .toUpperCase()
               : "I";
-            const due = new Date(p.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+            const due = new Date(p.endDate).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            });
             const tone = getTone(p.status);
 
             // Parse attachment details
-            const hasAttachment = p.notes?.includes("Attachment: 📄");
-            const attachmentName = hasAttachment 
-              ? p.notes.split("Attachment: 📄 ")[1] 
-              : null;
-            const displayNotes = hasAttachment 
-              ? p.notes.split("\n\nAttachment: 📄")[0] 
+            const attachmentMatch = p.notes?.match(/\[Attachment: 📄 (.*?)\]\((.*?)\)/);
+            const hasAttachmentUrl = !!attachmentMatch;
+            const attachmentName = attachmentMatch ? attachmentMatch[1] : null;
+            let attachmentUrl = attachmentMatch ? attachmentMatch[2] : null;
+
+            if (attachmentUrl && attachmentUrl.startsWith("/")) {
+              attachmentUrl = `${env.apiUrl.replace("/api/v1", "")}${attachmentUrl}`;
+            }
+
+            // fallback for old format without URL
+            const hasOldAttachment = p.notes?.includes("Attachment: 📄 ") && !hasAttachmentUrl;
+            const oldAttachmentName = hasOldAttachment ? p.notes.split("Attachment: 📄 ")[1] : null;
+
+            const displayNotes = p.notes
+              ? p.notes
+                  .replace(/\n\n\[Attachment: 📄 .*?\].*?$/, "")
+                  .replace(/\n\nAttachment: 📄 .*?$/, "")
               : p.notes;
 
             return (
-              <div key={p.id} className="p-6 rounded-2xl glass shadow-soft hover:shadow-glow hover:-translate-y-0.5 transition-all">
+              <div
+                key={p.id}
+                className="p-6 rounded-2xl glass shadow-soft hover:shadow-glow hover:-translate-y-0.5 transition-all"
+              >
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h3 className="font-semibold">{p.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-1">{displayNotes || "Active corporate internship sprint initiative."}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {displayNotes || "Active corporate internship sprint initiative."}
+                    </p>
                   </div>
-                  <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full whitespace-nowrap", toneBg[tone])}>
+                  <span
+                    className={cn(
+                      "text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full whitespace-nowrap",
+                      toneBg[tone],
+                    )}
+                  >
                     {p.status}
                   </span>
                 </div>
-                
-                {hasAttachment && (
+
+                {(hasAttachmentUrl || hasOldAttachment) && (
                   <div className="mt-3 p-2.5 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-between text-xs">
-                    <span className="font-medium text-primary truncate max-w-[80%]">📄 {attachmentName}</span>
-                    <Button variant="ghost" size="icon" className="size-6 text-primary hover:text-primary-foreground hover:bg-primary" onClick={() => toast.success(`Downloaded briefing: ${attachmentName}`)}>
-                      <FileDown className="size-3.5" />
-                    </Button>
+                    <span className="font-medium text-primary truncate max-w-[80%]">
+                      📄 {attachmentName || oldAttachmentName}
+                    </span>
+                    {hasAttachmentUrl ? (
+                      <a
+                        href={attachmentUrl!}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-center size-6 rounded-md text-primary hover:text-primary-foreground hover:bg-primary transition-colors"
+                      >
+                        <FileDown className="size-3.5" />
+                      </a>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-6 text-primary hover:text-primary-foreground hover:bg-primary"
+                        onClick={() => toast.success(`Downloaded briefing: ${oldAttachmentName}`)}
+                      >
+                        <FileDown className="size-3.5" />
+                      </Button>
+                    )}
                   </div>
                 )}
 
@@ -188,7 +266,10 @@ function ProjectsPage() {
                     <span className="font-bold">{progress}%</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-primary rounded-full" style={{ width: `${progress}%` }} />
+                    <div
+                      className="h-full bg-gradient-primary rounded-full"
+                      style={{ width: `${progress}%` }}
+                    />
                   </div>
                 </div>
                 <div className="flex items-center justify-between mt-5">
@@ -198,8 +279,12 @@ function ProjectsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Users className="size-3" /> 1</span>
-                    <span className="flex items-center gap-1"><Calendar className="size-3" /> {due}</span>
+                    <span className="flex items-center gap-1">
+                      <Users className="size-3" /> 1
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="size-3" /> {due}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -213,7 +298,9 @@ function ProjectsPage() {
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Launch New Project</DialogTitle>
-            <DialogDescription>Assign a targeted project sprint and attach briefings to a selected intern.</DialogDescription>
+            <DialogDescription>
+              Assign a targeted project sprint and attach briefings to a selected intern.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -256,7 +343,10 @@ function ProjectsPage() {
             </div>
             <div>
               <Label htmlFor="intern">Assign to Intern *</Label>
-              <Select value={formData.internId} onValueChange={(val) => setFormData({ ...formData, internId: val })}>
+              <Select
+                value={formData.internId}
+                onValueChange={(val) => setFormData({ ...formData, internId: val })}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select an intern..." />
                 </SelectTrigger>
@@ -279,29 +369,29 @@ function ProjectsPage() {
                 rows={3}
               />
             </div>
-            <div>
-              <Label htmlFor="file">Project Briefing Document (PDF/Doc) *</Label>
-              <Input
-                id="file"
-                type="file"
-                accept=".pdf,.doc,.docx,.txt"
-                onChange={(e) => setProjectFile(e.target.files?.[0] || null)}
-              />
-            </div>
+            <FileUpload
+              id="file"
+              label="Project Briefing Document (PDF/Doc) *"
+              description="PDF, DOC, DOCX, or TXT — up to 5MB"
+              accept=".pdf,.doc,.docx,.txt"
+              value={projectFile}
+              onChange={setProjectFile}
+              disabled={createProjectMutation.isPending || isUploading}
+            />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddProjectDialog(false)}>
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleSubmit}
-              disabled={createProjectMutation.isPending}
+              disabled={createProjectMutation.isPending || isUploading}
               className="bg-gradient-primary text-primary-foreground shadow-glow"
             >
-              {createProjectMutation.isPending ? (
+              {createProjectMutation.isPending || isUploading ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
-                  Launching...
+                  <Loader2 className="size-4 animate-spin mr-2" />
+                  {isUploading ? "Uploading..." : "Launching..."}
                 </>
               ) : (
                 "Launch Project"
