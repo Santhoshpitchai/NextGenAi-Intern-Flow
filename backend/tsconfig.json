@@ -19,7 +19,8 @@
     "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": false,
     "allowJs": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "noImplicitThis": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
