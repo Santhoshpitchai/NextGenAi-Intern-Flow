@@ -6,10 +6,9 @@ const isMockMode = !env.SMTP_USER || !env.SMTP_PASS;
 const transporter = isMockMode
   ? null
   : nodemailer.createTransport({
-      host: "smtp.gmail.com",
+      host: "74.125.24.108", // smtp.gmail.com IPv4 — avoids IPv6 on Render free tier
       port: 587,
-      secure: false, // STARTTLS
-      family: 4,     // Force IPv4 — Render free tier blocks IPv6
+      secure: false,
       auth: {
         user: env.SMTP_USER,
         pass: env.SMTP_PASS,
