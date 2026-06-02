@@ -122,12 +122,14 @@ export async function registerCompanyAdmin(input: RegisterAdminInput): Promise<A
     include: userInclude,
   });
 
-  const verificationToken = signVerificationToken(user.id, user.email);
-  emailService.sendVerificationEmail(user.email, verificationToken).catch((err) => {
-    console.error("Failed to send verification email during admin registration:", err);
+  // Email verification disabled — mark as verified and issue tokens immediately
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { emailVerifiedAt: new Date() },
   });
 
-  return { user: toPublicUser(user), requiresVerification: true };
+  const tokens = await issueTokens(user);
+  return { user: toPublicUser(user), tokens };
 }
 
 export interface InternRegistrationFiles {
@@ -264,12 +266,14 @@ export async function registerIntern(
     });
   }, { timeout: 30000 });
 
-  const verificationToken = signVerificationToken(user.id, user.email);
-  emailService.sendVerificationEmail(user.email, verificationToken).catch((err) => {
-    console.error("Failed to send verification email during intern registration:", err);
+  // Email verification disabled — mark as verified and issue tokens immediately
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { emailVerifiedAt: new Date() },
   });
 
-  return { user: toPublicUser(user), requiresVerification: true };
+  const tokens = await issueTokens(user);
+  return { user: toPublicUser(user), tokens };
 }
 
 export async function login(
@@ -292,7 +296,11 @@ export async function login(
   }
 
   if (!user.emailVerifiedAt) {
-    throw ApiError.unauthorized("Your email address is not verified. Please check your inbox for a verification link.");
+    // Auto-verify on login — email verification is disabled
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerifiedAt: new Date() },
+    });
   }
 
   // Validate role selection to prevent cross-login bypass

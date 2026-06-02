@@ -90,12 +90,7 @@ export function InternSignupForm() {
   const onSubmit = async (data: any) => {
     try {
       const result = await registerMutation.mutateAsync(data);
-      if (result.requiresVerification) {
-        setRegisteredEmail(data.email);
-        toast.success("Account created! Please check your email to verify.");
-      } else {
-        onAuthSuccess(result, true, "Welcome to InternFlow AI!");
-      }
+      onAuthSuccess(result, true, "Welcome to InternFlow AI!");
     } catch (err) {
       if (applyApiFieldErrors(err, setError)) {
         toast.error(err.message);
