@@ -44,4 +44,10 @@ router.get(
 // Admin-only: Get user by ID
 router.get("/:userId", requirePermission("VIEW_ALL_INTERNS"), userController.getUserById);
 
+// Admin-only: Reset a user's password
+router.post("/:userId/reset-password", requirePermission("VIEW_ALL_INTERNS"), userController.adminResetPassword);
+
+// Admin-only: Delete a user
+router.delete("/:userId", requirePermission("VIEW_ALL_INTERNS"), userController.adminDeleteUser);
+
 export default router;

@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
 import { getDisplayName, getDisplayRole } from "@/lib/auth/redirects";
 import type { User } from "@/types/auth";
+import { resolveFileUrl } from "@/lib/env";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -304,13 +305,13 @@ export function Topbar({ user: routeUser }: { user?: User }) {
           <div className="grid size-9 place-items-center rounded-full bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-soft overflow-hidden border border-primary/20 shrink-0">
             {user?.internProfile?.profilePhotoUrl ? (
               <img
-                src={user.internProfile.profilePhotoUrl}
+                src={resolveFileUrl(user.internProfile.profilePhotoUrl) ?? undefined}
                 alt={displayName}
                 className="size-full object-cover"
               />
             ) : user?.companyAdminProfile?.logoUrl ? (
               <img
-                src={user.companyAdminProfile.logoUrl}
+                src={resolveFileUrl(user.companyAdminProfile.logoUrl) ?? undefined}
                 alt={displayName}
                 className="size-full object-cover"
               />

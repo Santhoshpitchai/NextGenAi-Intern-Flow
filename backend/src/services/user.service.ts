@@ -399,3 +399,24 @@ export async function getChatDirectory() {
     orderBy: { createdAt: "desc" },
   });
 }
+
+export async function adminResetPassword(userId: string, newPassword: string): Promise<void> {
+  const { hashPassword } = await import("../utils/password.js");
+
+  const user = await prisma.user.findFirst({ where: { id: userId, deletedAt: null } });
+  if (!user) throw ApiError.notFound("User not found");
+
+  const passwordHash = await hashPassword(newPassword);
+  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+}
+
+export async function adminDeleteUser(userId: string): Promise<void> {
+  const user = await prisma.user.findFirst({ where: { id: userId, deletedAt: null } });
+  if (!user) throw ApiError.notFound("User not found");
+
+  // Soft delete
+  await prisma.user.update({
+    where: { id: userId },
+    data: { deletedAt: new Date(), isActive: false },
+  });
+}

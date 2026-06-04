@@ -58,3 +58,23 @@ export const getChatDirectory = asyncHandler(async (_req: Request, res: Response
   const users = await userService.getChatDirectory();
   sendSuccess(res, 200, "Chat directory retrieved successfully", users);
 });
+
+export const adminResetPassword = asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  const { newPassword } = req.body;
+
+  if (!newPassword || typeof newPassword !== "string" || newPassword.length < 8) {
+    throw ApiError.badRequest("New password must be at least 8 characters");
+  }
+
+  const id = typeof userId === "string" ? userId : userId[0];
+  await userService.adminResetPassword(id, newPassword);
+  sendSuccess(res, 200, "Password reset successfully");
+});
+
+export const adminDeleteUser = asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  const id = typeof userId === "string" ? userId : userId[0];
+  await userService.adminDeleteUser(id);
+  sendSuccess(res, 200, "User deleted successfully");
+});

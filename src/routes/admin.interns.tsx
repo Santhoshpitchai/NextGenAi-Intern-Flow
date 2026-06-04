@@ -23,6 +23,7 @@ import {
   UploadCloud,
   Eye,
   FileText,
+  KeyRound,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -38,9 +39,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { resolveFileUrl } from "@/lib/env";
 import { userApi } from "@/services/user-api";
 import { assignmentApi } from "@/services/assignment-api";
 import { authApi } from "@/services/auth-api";
+import { env } from "@/lib/env";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -75,6 +78,8 @@ function InternsPage() {
     search.add === true || search.add === "true",
   );
   const [viewIntern, setViewIntern] = useState<any>(null); // State for the Details Dialog
+  const [resetPasswordDialog, setResetPasswordDialog] = useState<{ userId: string; name: string } | null>(null);
+  const [newPassword, setNewPassword] = useState("");
 
   // Filter States
   const [branchFilter, setBranchFilter] = useState("all");
@@ -105,6 +110,28 @@ function InternsPage() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   const limit = 50;
+
+  // Reset password mutation
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({ userId, password }: { userId: string; password: string }) => {
+      const res = await fetch(`${env.apiUrl}/users/${userId}/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ newPassword: password }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to reset password");
+      }
+    },
+    onSuccess: () => {
+      toast.success("Password reset successfully");
+      setResetPasswordDialog(null);
+      setNewPassword("");
+    },
+    onError: (err: any) => toast.error(err.message || "Failed to reset password"),
+  });
 
   // Fetch all interns
   const { data: internsData, isLoading } = useQuery({
@@ -376,7 +403,7 @@ function InternsPage() {
                         <div className="flex items-center gap-3">
                           {user.internProfile.profilePhotoUrl ? (
                             <img
-                              src={user.internProfile.profilePhotoUrl}
+                              src={resolveFileUrl(user.internProfile.profilePhotoUrl) ?? undefined}
                               alt={user.internProfile.fullName}
                               className="size-10 rounded-full object-cover shadow-sm border border-border"
                             />
@@ -440,6 +467,23 @@ function InternsPage() {
                             <DropdownMenuItem onClick={() => navigate({ to: "/admin/reports" })}>
                               <FileText className="size-4 mr-2" /> View Reports
                             </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => setResetPasswordDialog({ userId: user.id, name: user.internProfile.fullName })}
+                            >
+                              <KeyRound className="size-4 mr-2" /> Reset Password
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => {
+                                if (confirm(`Delete ${user.internProfile.fullName}? This cannot be undone.`)) {
+                                  fetch(`${env.apiUrl}/users/${user.id}`, { method: "DELETE", credentials: "include" })
+                                    .then(r => r.ok ? (toast.success("Intern deleted"), queryClient.invalidateQueries({ queryKey: ["all-interns"] })) : toast.error("Failed to delete"))
+                                    .catch(() => toast.error("Failed to delete"));
+                                }
+                              }}
+                            >
+                              <span className="size-4 mr-2">🗑</span> Delete Intern
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
@@ -463,7 +507,7 @@ function InternsPage() {
               <div className="flex items-center gap-4 border-b border-border pb-6">
                 {viewIntern.internProfile.profilePhotoUrl ? (
                   <img
-                    src={viewIntern.internProfile.profilePhotoUrl}
+                    src={resolveFileUrl(viewIntern.internProfile.profilePhotoUrl) ?? undefined}
                     alt="Profile"
                     className="size-20 rounded-full object-cover shadow-sm border border-border"
                   />
@@ -536,7 +580,7 @@ function InternsPage() {
                     asChild
                     className="bg-gradient-primary text-primary-foreground shadow-glow"
                   >
-                    <a href={viewIntern.internProfile.resumeUrl} target="_blank" rel="noreferrer">
+                    <a href={resolveFileUrl(viewIntern.internProfile.resumeUrl) ?? "#"} target="_blank" rel="noreferrer">
                       <Download className="size-4 mr-2" /> Download Resume
                     </a>
                   </Button>
@@ -546,6 +590,36 @@ function InternsPage() {
               </DialogFooter>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={!!resetPasswordDialog} onOpenChange={(open) => { if (!open) { setResetPasswordDialog(null); setNewPassword(""); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>Set a new password for {resetPasswordDialog?.name}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Label htmlFor="new-password">New Password</Label>
+            <Input
+              id="new-password"
+              type="password"
+              placeholder="Min 8 characters"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setResetPasswordDialog(null); setNewPassword(""); }}>Cancel</Button>
+            <Button
+              disabled={newPassword.length < 8 || resetPasswordMutation.isPending}
+              onClick={() => resetPasswordMutation.mutate({ userId: resetPasswordDialog!.userId, password: newPassword })}
+              className="bg-gradient-primary text-primary-foreground"
+            >
+              {resetPasswordMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : "Reset Password"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
