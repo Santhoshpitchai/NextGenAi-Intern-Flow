@@ -414,9 +414,16 @@ export async function adminDeleteUser(userId: string): Promise<void> {
   const user = await prisma.user.findFirst({ where: { id: userId, deletedAt: null } });
   if (!user) throw ApiError.notFound("User not found");
 
-  // Soft delete
+  // Anonymize email so it can be reused for new registrations
+  const anonymizedEmail = `deleted_${userId}@deleted.invalid`;
+
+  // Soft delete — anonymize email, deactivate account
   await prisma.user.update({
     where: { id: userId },
-    data: { deletedAt: new Date(), isActive: false },
+    data: {
+      deletedAt: new Date(),
+      isActive: false,
+      email: anonymizedEmail,
+    },
   });
 }
