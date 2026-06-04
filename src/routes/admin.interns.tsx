@@ -114,16 +114,8 @@ function InternsPage() {
   // Reset password mutation
   const resetPasswordMutation = useMutation({
     mutationFn: async ({ userId, password }: { userId: string; password: string }) => {
-      const res = await fetch(`${env.apiUrl}/users/${userId}/reset-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ newPassword: password }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Failed to reset password");
-      }
+      const { apiClient } = await import("@/lib/api/client");
+      await apiClient.post(`/users/${userId}/reset-password`, { newPassword: password });
     },
     onSuccess: () => {
       toast.success("Password reset successfully");
@@ -474,11 +466,16 @@ function InternsPage() {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
-                              onClick={() => {
+                              onClick={async () => {
                                 if (confirm(`Delete ${user.internProfile.fullName}? This cannot be undone.`)) {
-                                  fetch(`${env.apiUrl}/users/${user.id}`, { method: "DELETE", credentials: "include" })
-                                    .then(r => r.ok ? (toast.success("Intern deleted"), queryClient.invalidateQueries({ queryKey: ["all-interns"] })) : toast.error("Failed to delete"))
-                                    .catch(() => toast.error("Failed to delete"));
+                                  try {
+                                    const { apiClient } = await import("@/lib/api/client");
+                                    await apiClient.delete(`/users/${user.id}`);
+                                    toast.success("Intern deleted");
+                                    queryClient.invalidateQueries({ queryKey: ["all-interns"] });
+                                  } catch {
+                                    toast.error("Failed to delete intern");
+                                  }
                                 }
                               }}
                             >
