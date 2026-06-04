@@ -308,12 +308,14 @@ export function Topbar({ user: routeUser }: { user?: User }) {
                 src={resolveFileUrl(user.internProfile.profilePhotoUrl) ?? undefined}
                 alt={displayName}
                 className="size-full object-cover"
+                onError={(e) => { e.currentTarget.style.display = "none"; }}
               />
             ) : user?.companyAdminProfile?.logoUrl ? (
               <img
                 src={resolveFileUrl(user.companyAdminProfile.logoUrl) ?? undefined}
                 alt={displayName}
                 className="size-full object-cover"
+                onError={(e) => { e.currentTarget.style.display = "none"; }}
               />
             ) : (
               <span>

@@ -398,6 +398,14 @@ function InternsPage() {
                               src={resolveFileUrl(user.internProfile.profilePhotoUrl) ?? undefined}
                               alt={user.internProfile.fullName}
                               className="size-10 rounded-full object-cover shadow-sm border border-border"
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                target.style.display = "none";
+                                const fallback = document.createElement("div");
+                                fallback.className = "size-10 rounded-full bg-gradient-primary text-primary-foreground text-xs font-bold grid place-items-center";
+                                fallback.textContent = initials;
+                                target.parentNode?.replaceChild(fallback, target);
+                              }}
                             />
                           ) : (
                             <div className="size-10 rounded-full bg-gradient-primary text-primary-foreground text-xs font-bold grid place-items-center">
