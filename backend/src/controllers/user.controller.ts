@@ -69,12 +69,12 @@ export const adminResetPassword = asyncHandler(async (req: Request, res: Respons
 
   const id = typeof userId === "string" ? userId : userId[0];
   await userService.adminResetPassword(id, newPassword);
-  sendSuccess(res, 200, "Password reset successfully");
+  sendSuccess(res, 200, "Password reset successfully", null);
 });
 
 export const adminDeleteUser = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = req.params;
   const id = typeof userId === "string" ? userId : userId[0];
   await userService.adminDeleteUser(id);
-  sendSuccess(res, 200, "User deleted successfully");
+  sendSuccess(res, 200, "User deleted successfully", null);
 });
