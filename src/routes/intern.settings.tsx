@@ -1,18 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Save, User as UserIcon, Lock, Loader2 } from "lucide-react";
+import { Save, User as UserIcon, Lock, Loader2, Camera, Upload } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { userApi } from "@/services/user-api";
 import { authApi } from "@/services/auth-api";
+import { uploadApi } from "@/services/upload-api";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { resolveFileUrl } from "@/lib/env";
 
 const profileSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
@@ -53,6 +55,34 @@ function InternSettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Preview
+    const url = URL.createObjectURL(file);
+    setPhotoPreview(url);
+
+    try {
+      setIsUploadingPhoto(true);
+      await uploadApi.uploadProfilePhoto(file);
+      await refetchUser();
+      toast.success("Profile photo updated successfully");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to upload photo");
+      setPhotoPreview(null);
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
+  const currentPhotoUrl = photoPreview || resolveFileUrl(user?.internProfile?.profilePhotoUrl);
+  const displayName = user?.internProfile?.fullName || user?.email || "User";
+  const initials = displayName.split(" ").map((s: string) => s[0]).join("").slice(0, 2).toUpperCase();
 
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -139,6 +169,56 @@ function InternSettingsPage() {
           <TabsContent value="profile">
             <div className="rounded-2xl glass border border-border/50 p-6 shadow-glass">
               <h3 className="mb-4 text-lg font-bold">Personal Information</h3>
+
+              {/* Profile Photo Upload */}
+              <div className="mb-6 flex items-center gap-5 border-b border-border/40 pb-6">
+                <div className="relative">
+                  <div className="size-20 rounded-full overflow-hidden border-2 border-primary/20 bg-gradient-primary grid place-items-center text-primary-foreground text-xl font-bold">
+                    {currentPhotoUrl ? (
+                      <img
+                        src={currentPhotoUrl}
+                        alt={displayName}
+                        className="size-full object-cover"
+                        onError={(e) => { e.currentTarget.style.display = "none"; }}
+                      />
+                    ) : (
+                      <span>{initials}</span>
+                    )}
+                  </div>
+                  {isUploadingPhoto && (
+                    <div className="absolute inset-0 rounded-full bg-black/50 grid place-items-center">
+                      <Loader2 className="size-5 animate-spin text-white" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm font-semibold">Profile Photo</p>
+                  <p className="text-xs text-muted-foreground">JPG, PNG or WEBP — max 5MB</p>
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    className="sr-only"
+                    onChange={handlePhotoChange}
+                    disabled={isUploadingPhoto}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 w-fit"
+                    disabled={isUploadingPhoto}
+                    onClick={() => photoInputRef.current?.click()}
+                  >
+                    {isUploadingPhoto ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Upload className="size-3.5" />
+                    )}
+                    {currentPhotoUrl ? "Change Photo" : "Upload Photo"}
+                  </Button>
+                </div>
+              </div>
 
               <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-5">
                 <div className="grid gap-5 md:grid-cols-2">
