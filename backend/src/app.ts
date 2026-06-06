@@ -11,6 +11,10 @@ import { globalLimiter } from "./middleware/rate-limit.middleware.js";
 
 function isAllowedOrigin(origin: string | undefined): boolean {
   if (!origin) return true;
+  // TEMPORARY: Allow all origins for testing - REMOVE IN PRODUCTION
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_ALL_CORS === 'true') {
+    return true;
+  }
   // Allow exact matches from CORS_ORIGIN env var
   if (corsOrigins.includes(origin)) return true;
   // Allow all Cloudflare Pages preview deployments
@@ -29,6 +33,12 @@ export function createApp() {
   app.use(
     cors({
       origin: (origin, callback) => {
+        // TEMPORARY: Allow all origins in production for testing
+        if (process.env.NODE_ENV === 'production') {
+          callback(null, true);
+          return;
+        }
+        
         if (isAllowedOrigin(origin)) {
           callback(null, true);
         } else {

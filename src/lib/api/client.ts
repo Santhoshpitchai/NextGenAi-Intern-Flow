@@ -7,7 +7,7 @@ import type { ApiErrorBody, ApiSuccess, AuthTokens } from "@/types/auth";
 export const apiClient = axios.create({
   baseURL: env.apiUrl,
   headers: { "Content-Type": "application/json" },
-  timeout: 30_000,
+  timeout: 60_000, // Increased to 60 seconds for slower servers
 });
 
 let isRefreshing = false;

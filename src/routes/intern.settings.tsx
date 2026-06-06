@@ -63,13 +63,18 @@ function InternSettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Preview
-    const url = URL.createObjectURL(file);
-    setPhotoPreview(url);
+    // Preview locally immediately
+    const objectUrl = URL.createObjectURL(file);
+    setPhotoPreview(objectUrl);
 
     try {
       setIsUploadingPhoto(true);
-      await uploadApi.uploadProfilePhoto(file);
+      const formData = new FormData();
+      formData.append("profilePhoto", file);
+      const { apiClient } = await import("@/lib/api/client");
+      await apiClient.post("/uploads/profile-photo", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       await refetchUser();
       toast.success("Profile photo updated successfully");
     } catch (error: any) {
@@ -80,7 +85,7 @@ function InternSettingsPage() {
     }
   };
 
-  const currentPhotoUrl = photoPreview || resolveFileUrl(user?.internProfile?.profilePhotoUrl);
+  const currentPhotoUrl = photoPreview || resolveFileUrl(user?.internProfile?.profilePhotoUrl) || null;
   const displayName = user?.internProfile?.fullName || user?.email || "User";
   const initials = displayName.split(" ").map((s: string) => s[0]).join("").slice(0, 2).toUpperCase();
 
