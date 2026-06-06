@@ -30,10 +30,17 @@ export function createApp() {
   app.set("trust proxy", 1);
 
   app.use(helmet());
-  // EMERGENCY: Completely disable CORS for now
+  // SECURE: Only allow specific origins
   app.use(
     cors({
-      origin: true, // Allow all origins
+      origin: [
+        'https://nextgenai-intern-flow.pages.dev',
+        'http://localhost:5173', // For local development
+        'http://localhost:5174',
+        'http://localhost:3000',
+        // Add your production domain when ready
+        // 'https://your-company-domain.com',
+      ],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
