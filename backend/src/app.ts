@@ -30,22 +30,13 @@ export function createApp() {
   app.set("trust proxy", 1);
 
   app.use(helmet());
+  // EMERGENCY: Completely disable CORS for now
   app.use(
     cors({
-      origin: (origin, callback) => {
-        // TEMPORARY: Allow all origins in production for testing
-        if (process.env.NODE_ENV === 'production') {
-          callback(null, true);
-          return;
-        }
-        
-        if (isAllowedOrigin(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error(`CORS: origin ${origin} not allowed`));
-        }
-      },
+      origin: true, // Allow all origins
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     }),
   );
 
