@@ -1,4 +1,5 @@
 import { apiClient, unwrap } from "@/lib/api/client";
+import { tokenStorage } from "@/lib/storage/token-storage";
 import type { ApiSuccess } from "@/types/auth";
 
 export interface Notification {
@@ -13,6 +14,7 @@ export interface Notification {
 
 export const notificationApi = {
   async getNotifications(unreadOnly = false): Promise<Notification[]> {
+    if (!tokenStorage.getAccessToken()) return [];
     const res = await apiClient.get<ApiSuccess<Notification[]>>("/notifications", {
       params: { unreadOnly },
     });
@@ -20,8 +22,9 @@ export const notificationApi = {
   },
 
   async getUnreadCount(): Promise<number> {
+    if (!tokenStorage.getAccessToken()) return 0;
     const res = await apiClient.get<ApiSuccess<{ count: number }>>("/notifications/unread");
-    return unwrap(res).count;
+    return unwrap<{ count: number }>(res).count;
   },
 
   async markAsRead(id: string): Promise<void> {

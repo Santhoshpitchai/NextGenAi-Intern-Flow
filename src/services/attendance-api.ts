@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { tokenStorage } from "@/lib/storage/token-storage";
 
 export interface AttendanceRecord {
   id: string;
@@ -31,6 +32,7 @@ export const attendanceApi = {
   },
 
   async getMyRecords(limit = 30): Promise<AttendanceRecord[]> {
+    if (!tokenStorage.getAccessToken()) return [];
     const response = await apiClient.get("/attendance/my", {
       params: { limit },
     });

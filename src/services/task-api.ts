@@ -1,4 +1,5 @@
 import { apiClient, unwrap } from "@/lib/api/client";
+import { tokenStorage } from "@/lib/storage/token-storage";
 import type { ApiSuccess } from "@/types/auth";
 
 export interface Task {
@@ -26,6 +27,7 @@ export interface Task {
 
 export const taskApi = {
   async getMyTasks(status?: string): Promise<Task[]> {
+    if (!tokenStorage.getAccessToken()) return [];
     const res = await apiClient.get<ApiSuccess<Task[]>>("/tasks/my/tasks", {
       params: { status },
     });
