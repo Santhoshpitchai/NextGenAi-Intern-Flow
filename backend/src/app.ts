@@ -29,7 +29,11 @@ export function createApp() {
   // Trust proxy if deployed behind a load balancer (e.g., Nginx, AWS ELB, Heroku)
   app.set("trust proxy", 1);
 
-  app.use(helmet());
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+    }),
+  );
   // SECURE: Only allow specific origins
   app.use(
     cors({
